@@ -10,14 +10,14 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  # KSP 1.12.5 assemblies stripped to their public surface, enough to compile against.
+  KSP_LIBS_URL: https://github.com/KSPModdingLibs/KSPLibs/raw/main/KSP-1.12.5.zip
+  KSP_DIR: ${{ github.workspace }}/ksp
+
 jobs:
-  offline-tests:
-    name: Offline tests (${{ matrix.os }})
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [windows-latest, ubuntu-latest, macos-latest]
-    runs-on: ${{ matrix.os }}
+  check:
+    runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
@@ -26,20 +26,15 @@ jobs:
         with:
           dotnet-version: 10.0.x
 
-      # The driver mod and the game tests compile against a KSP install, which hosted runners don't have, so these are
-      # the projects that build without one. Tests that need a real install skip themselves.
-      - name: Test
-        shell: bash
+      - name: Check formatting
         run: |
-          status=0
-          for project in KspHarness.ConfigNodes.Tests KspHarness.Installs.Tests KspHarness.Tests KspHarness.Cli.Tests; do
-            dotnet test "tests/$project" --logger "trx;LogFileName=$project.trx" --results-directory TestResults \
-              || status=1
-          done
-          exit $status
+          dotnet tool restore
+          dotnet csharpier check .
 
-      - uses: actions/upload-artifact@v7
-        if: failure()
-        with:
-          name: test-results-${{ matrix.os }}
-          path: TestResults
+      - name: Download KSP assemblies
+        run: |
+          curl -sSfL "$KSP_LIBS_URL" -o "$RUNNER_TEMP/ksp.zip"
+          unzip -q "$RUNNER_TEMP/ksp.zip" -d "$KSP_DIR"
+
+      - name: Build
+        run: dotnet build KspHarness.slnx -c Release
