@@ -1,0 +1,16 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/KspHarness.Cli/KspHarness.Cli.csproj" />
+    <Project Path="src/KspHarness.ConfigNodes/KspHarness.ConfigNodes.csproj" />
+    <Project Path="src/KspHarness.Installs/KspHarness.Installs.csproj" />
+    <Project Path="src/KspHarness.Mod/KspHarness.Mod.csproj" />
+    <Project Path="src/KspHarness/KspHarness.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/KspHarness.Cli.Tests/KspHarness.Cli.Tests.csproj" />
+    <Project Path="tests/KspHarness.ConfigNodes.Tests/KspHarness.ConfigNodes.Tests.csproj" />
+    <Project Path="tests/KspHarness.GameTests/KspHarness.GameTests.csproj" />
+    <Project Path="tests/KspHarness.Installs.Tests/KspHarness.Installs.Tests.csproj" />
+    <Project Path="tests/KspHarness.Tests/KspHarness.Tests.csproj" />
+  </Folder>
+</Solution>
