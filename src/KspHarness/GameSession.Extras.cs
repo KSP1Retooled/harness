@@ -16,11 +16,15 @@ public sealed partial class GameSession
     public async Task<byte[]> ScreenshotAsync(
         string? path = null,
         int superSize = 1,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(superSize, 1);
 
-        var png = await Run<byte[]>($"return await Screenshot.Capture({superSize});", cancellationToken: cancellationToken);
+        var png = await Run<byte[]>(
+            $"return await Screenshot.Capture({superSize});",
+            cancellationToken: cancellationToken
+        );
         if (path is not null)
         {
             var folder = Path.GetDirectoryName(Path.GetFullPath(path));

@@ -47,7 +47,9 @@ public sealed class GameLayoutTests
         string root = FakeInstall.Create(dir, platform: GamePlatform.MacOS);
         File.Delete(Path.Combine(root, "KSP.app/Contents/MacOS/KSP"));
         dir.Write("start/KSP.app/Contents/MacOS/Kerbal Space Program", "exe");
-        dir.Write("start/KSP.app/Contents/Info.plist", """
+        dir.Write(
+            "start/KSP.app/Contents/Info.plist",
+            """
             <?xml version="1.0" encoding="UTF-8"?>
             <plist version="1.0">
             <dict>
@@ -55,7 +57,8 @@ public sealed class GameLayoutTests
                 <string>Kerbal Space Program</string>
             </dict>
             </plist>
-            """);
+            """
+        );
 
         var layout = GameLayout.Require(root);
 
@@ -177,7 +180,12 @@ public sealed class GameLayoutTests
         var home = new HarnessHome(dir.Combine("home"));
 
         var instance = await InstanceBuilder.BuildAsync(
-            new InstanceBuilderTests.WithSettings(), start, home, null, cancel: Cancel);
+            new InstanceBuilderTests.WithSettings(),
+            start,
+            home,
+            null,
+            cancel: Cancel
+        );
 
         Assert.Equal(platform, instance.Layout.Platform);
         Assert.True(File.Exists(instance.Layout.LaunchPath));
@@ -186,8 +194,10 @@ public sealed class GameLayoutTests
         Assert.Empty(instance.RunningGameProcessIds());
         if (!OperatingSystem.IsWindows())
         {
-            Assert.Equal(File.GetUnixFileMode(Path.Combine(root, executable)),
-                File.GetUnixFileMode(instance.Layout.LaunchPath));
+            Assert.Equal(
+                File.GetUnixFileMode(Path.Combine(root, executable)),
+                File.GetUnixFileMode(instance.Layout.LaunchPath)
+            );
         }
     }
 
@@ -202,8 +212,12 @@ public sealed class GameLayoutTests
         var mode = (UnixFileMode)Convert.ToInt32("750", 8);
         File.SetUnixFileMode(Path.Combine(root, executable), mode);
 
-        new TreeCopier(GameLayout.Require(root).DataDirRelative, allowLinks: false)
-            .Copy(root, dir.Combine("copy"), new HashSet<string>(), Cancel);
+        new TreeCopier(GameLayout.Require(root).DataDirRelative, allowLinks: false).Copy(
+            root,
+            dir.Combine("copy"),
+            new HashSet<string>(),
+            Cancel
+        );
 
         Assert.Equal(mode, File.GetUnixFileMode(dir.Combine("copy", executable)));
     }

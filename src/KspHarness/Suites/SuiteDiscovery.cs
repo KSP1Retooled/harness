@@ -42,10 +42,7 @@ public static class SuiteDiscovery
             }
         }
 
-        return tests
-            .GroupBy(test => test.Install)
-            .Select(group => new SuiteGroup(group.Key, group.ToList()))
-            .ToList();
+        return tests.GroupBy(test => test.Install).Select(group => new SuiteGroup(group.Key, group.ToList())).ToList();
     }
 
     private static Type InstallOf(Type suite)
@@ -76,8 +73,9 @@ public static class SuiteDiscovery
         var slots = new Dictionary<(Module, int), int>();
         foreach (var type in chain)
         {
-            var declared = type
-                .GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly)
+            var declared = type.GetMethods(
+                    BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly
+                )
                 .Where(method => method.IsDefined(typeof(TestAttribute), inherit: false))
                 .OrderBy(method => method.MetadataToken);
 
@@ -102,11 +100,16 @@ public static class SuiteDiscovery
 
     private static void Validate(Type suite, MethodInfo method)
     {
-        if (!method.IsPublic || method.GetParameters().Length != 0 || method.ReturnType != typeof(Task)
-            || method.IsGenericMethodDefinition)
+        if (
+            !method.IsPublic
+            || method.GetParameters().Length != 0
+            || method.ReturnType != typeof(Task)
+            || method.IsGenericMethodDefinition
+        )
         {
             throw new InvalidOperationException(
-                $"{suite.Name}.{method.Name}: a [Test] method must be public, take no parameters and return Task");
+                $"{suite.Name}.{method.Name}: a [Test] method must be public, take no parameters and return Task"
+            );
         }
 
         if (suite.GetConstructor(Type.EmptyTypes) is null)

@@ -31,22 +31,25 @@ public sealed class TempDir : IDisposable
         {
             Directory.Delete(Root, recursive: true);
         }
-        catch (IOException)
-        {
-        }
+        catch (IOException) { }
     }
 }
 
 internal static class FakeInstall
 {
     /// <summary>The layout of the players this machine runs.</summary>
-    public static GamePlatform HostPlatform => OperatingSystem.IsWindows() ? GamePlatform.Windows
+    public static GamePlatform HostPlatform =>
+        OperatingSystem.IsWindows() ? GamePlatform.Windows
         : OperatingSystem.IsMacOS() ? GamePlatform.MacOS
         : GamePlatform.Linux;
 
     /// <summary>The smallest folder StartingInstall accepts, with one file of each kind the copier treats apart.</summary>
-    public static string Create(TempDir dir, string name = "start", bool retooled = false,
-        GamePlatform platform = GamePlatform.Windows)
+    public static string Create(
+        TempDir dir,
+        string name = "start",
+        bool retooled = false,
+        GamePlatform platform = GamePlatform.Windows
+    )
     {
         string root = dir.Combine(name);
         void Write(string relative, string content)
@@ -87,8 +90,11 @@ internal static class FakeInstall
         {
             GamePlatform.Windows => ("KSP_x64.exe", "UnityPlayer.dll", "KSP_x64_Data"),
             GamePlatform.Linux => ("KSP.x86_64", "UnityPlayer.so", "KSP_Data"),
-            _ => ("KSP.app/Contents/MacOS/KSP", "KSP.app/Contents/Frameworks/UnityPlayer.dylib",
-                "KSP.app/Contents/Resources/Data"),
+            _ => (
+                "KSP.app/Contents/MacOS/KSP",
+                "KSP.app/Contents/Frameworks/UnityPlayer.dylib",
+                "KSP.app/Contents/Resources/Data"
+            ),
         };
     }
 }
@@ -98,7 +104,12 @@ internal static class FileIdentity
     /// <summary>Volume serial and file index: equal for two names of the same file. Windows only.</summary>
     public static (uint Volume, ulong Index, uint Links) Get(string path)
     {
-        using var handle = File.OpenHandle(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+        using var handle = File.OpenHandle(
+            path,
+            FileMode.Open,
+            FileAccess.Read,
+            FileShare.ReadWrite | FileShare.Delete
+        );
         if (!GetFileInformationByHandle(handle, out var info))
         {
             throw new Win32Exception(Marshal.GetLastPInvokeError());
@@ -130,8 +141,10 @@ internal static class FileIdentity
     }
 
     [DllImport("kernel32.dll", SetLastError = true)]
-    private static extern bool GetFileInformationByHandle(Microsoft.Win32.SafeHandles.SafeFileHandle file,
-        out ByHandleFileInformation information);
+    private static extern bool GetFileInformationByHandle(
+        Microsoft.Win32.SafeHandles.SafeFileHandle file,
+        out ByHandleFileInformation information
+    );
 }
 
 internal static class Zips

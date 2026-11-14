@@ -41,7 +41,8 @@ public static class Approve
         throw new ApprovalException(
             $"'{name}' differs from its approved file; received {receivedPath}\n{diff}",
             approvedPath,
-            receivedPath);
+            receivedPath
+        );
     }
 
     /// <summary>
@@ -49,7 +50,12 @@ public static class Approve
     /// <paramref name="tolerance"/> (<see cref="ScreenshotTolerance.Default"/> when null). On a mismatch it also writes
     /// <c>.diff.png</c>, which marks the differing pixels in red.
     /// </summary>
-    public static ImageComparison? Screenshot(byte[] png, string name, ScreenshotTolerance? tolerance, ApprovalContext ctx)
+    public static ImageComparison? Screenshot(
+        byte[] png,
+        string name,
+        ScreenshotTolerance? tolerance,
+        ApprovalContext ctx
+    )
     {
         var approvedPath = ctx.PathFor(name, "approved", ".png");
         var receivedPath = ctx.PathFor(name, "received", ".png");
@@ -72,7 +78,11 @@ public static class Approve
         string? incomparable = null;
         try
         {
-            comparison = ImageComparison.Compare(RgbaImage.FromPng(File.ReadAllBytes(approvedPath)), received, tolerance);
+            comparison = ImageComparison.Compare(
+                RgbaImage.FromPng(File.ReadAllBytes(approvedPath)),
+                received,
+                tolerance
+            );
         }
         catch (IncomparableImagesException e)
         {
@@ -98,25 +108,28 @@ public static class Approve
             throw new ApprovalException(
                 $"screenshot '{name}' cannot be compared: {incomparable}; received {receivedPath}",
                 approvedPath,
-                receivedPath);
+                receivedPath
+            );
         }
 
         WriteBytes(diffPath, comparison.Diff.ToPng());
         throw new ApprovalException(
             $"screenshot '{name}' differs from its approved image: {comparison.Describe()}; "
-            + $"received {receivedPath}, diff {diffPath}",
+                + $"received {receivedPath}, diff {diffPath}",
             approvedPath,
             receivedPath,
-            diffPath);
+            diffPath
+        );
     }
 
     private static ApprovalException Missing(string name, string approvedPath, string receivedPath)
     {
         return new ApprovalException(
             $"'{name}' has no approved file yet; check {receivedPath} and rename it to {Path.GetFileName(approvedPath)}, "
-            + $"or rerun with {ApprovalContext.ApproveVariable}=1",
+                + $"or rerun with {ApprovalContext.ApproveVariable}=1",
             approvedPath,
-            receivedPath);
+            receivedPath
+        );
     }
 
     private static void WriteText(string path, string text)

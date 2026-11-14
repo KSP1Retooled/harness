@@ -146,12 +146,8 @@ public static class ValueParser
             result = Enum.Parse(type, text);
             return true;
         }
-        catch (ArgumentException)
-        {
-        }
-        catch (OverflowException)
-        {
-        }
+        catch (ArgumentException) { }
+        catch (OverflowException) { }
 
         result = null;
         return false;

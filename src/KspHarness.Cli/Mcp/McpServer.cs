@@ -23,14 +23,16 @@ internal static class McpServer
         var builder = Host.CreateEmptyApplicationBuilder(settings: null);
 
         // Standard output carries the protocol, so logging goes to standard error.
-        builder.Logging.AddConsole(options => options.LogToStandardErrorThreshold = Microsoft.Extensions.Logging.LogLevel.Trace);
+        builder.Logging.AddConsole(options =>
+            options.LogToStandardErrorThreshold = Microsoft.Extensions.Logging.LogLevel.Trace
+        );
         builder.Logging.SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Warning);
 
         // Registered as an instance so that the container leaves disposing it to this method.
         await using var state = new GameState();
         builder.Services.AddSingleton(state);
-        builder.Services
-            .AddMcpServer(options =>
+        builder
+            .Services.AddMcpServer(options =>
             {
                 options.ServerInfo = new Implementation
                 {

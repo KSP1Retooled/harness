@@ -8,9 +8,7 @@ namespace KspHarness.Script;
 public readonly struct DialogInfo
 {
     public DialogInfo(string name, string title, string message, string[] buttons)
-        : this(0, name, title, message, buttons)
-    {
-    }
+        : this(0, name, title, message, buttons) { }
 
     public DialogInfo(int id, string name, string title, string message, string[] buttons)
     {
@@ -32,7 +30,8 @@ public readonly struct DialogInfo
 
     public string[] Buttons { get; }
 
-    public override string ToString() => Name + " \"" + Title + "\" [" + string.Join(", ", Buttons ?? new string[0]) + "]";
+    public override string ToString() =>
+        Name + " \"" + Title + "\" [" + string.Join(", ", Buttons ?? new string[0]) + "]";
 }
 
 /// <summary>The game's popup dialogs.</summary>

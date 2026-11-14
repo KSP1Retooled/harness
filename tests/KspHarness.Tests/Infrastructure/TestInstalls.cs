@@ -58,10 +58,9 @@ internal static class TestInstalls
     {
         var managed = GameLayout.FindByManagedDir(installDir)!.ManagedDir;
         var stubs = Directory.GetFiles(Path.Combine(AppContext.BaseDirectory, "ScriptStubs"), "*.cs");
-        var trees = stubs.Select(path => CSharpSyntaxTree.ParseText(
-            File.ReadAllText(path),
-            new CSharpParseOptions(LanguageVersion.Latest),
-            path));
+        var trees = stubs.Select(path =>
+            CSharpSyntaxTree.ParseText(File.ReadAllText(path), new CSharpParseOptions(LanguageVersion.Latest), path)
+        );
 
         // Only the base library and the facades: the stubs name no game types.
         var references = new[] { "mscorlib.dll", "System.dll", "System.Core.dll", "netstandard.dll" }
@@ -73,7 +72,8 @@ internal static class TestInstalls
             "KspHarness.Mod",
             trees,
             references,
-            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
+        );
 
         var output = Path.Combine(AppContext.BaseDirectory, "mod-stand-in", install);
         Directory.CreateDirectory(output);
@@ -85,7 +85,8 @@ internal static class TestInstalls
             {
                 throw new InvalidOperationException(
                     "the script stubs do not compile against the game's base library:\n"
-                    + string.Join("\n", result.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error)));
+                        + string.Join("\n", result.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error))
+                );
             }
         }
 

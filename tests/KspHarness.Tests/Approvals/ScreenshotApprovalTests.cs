@@ -121,7 +121,8 @@ public sealed class ScreenshotApprovalTests : IDisposable
             received.ToPng(),
             "menu",
             new ScreenshotTolerance { ChannelTolerance = 4, MaxDifferentFraction = 0.002 },
-            Context());
+            Context()
+        );
 
         Assert.NotNull(comparison);
         Assert.True(comparison.Matches);
@@ -197,8 +198,9 @@ public sealed class ScreenshotApprovalTests : IDisposable
     {
         SaveApproved(Scene(160, 90));
 
-        var e = Assert.Throws<ApprovalException>(
-            () => Approve.Screenshot(Scene(160, 120).ToPng(), "menu", null, Context()));
+        var e = Assert.Throws<ApprovalException>(() =>
+            Approve.Screenshot(Scene(160, 120).ToPng(), "menu", null, Context())
+        );
 
         Assert.Contains("aspect ratios differ", e.Message);
         Assert.True(File.Exists(PathOf("received")));
@@ -213,8 +215,14 @@ public sealed class ScreenshotApprovalTests : IDisposable
         var received = Scene(50, 50);
         Paint(received, 0, 0, 25, 25, 0, 0, 0);
 
-        Assert.Throws<ArgumentOutOfRangeException>(() => Approve.Screenshot(
-            received.ToPng(), "menu", new ScreenshotTolerance { Downscale = 0 }, Context(approve: true)));
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            Approve.Screenshot(
+                received.ToPng(),
+                "menu",
+                new ScreenshotTolerance { Downscale = 0 },
+                Context(approve: true)
+            )
+        );
 
         Assert.Equal(before, File.ReadAllBytes(PathOf("approved")));
     }
@@ -256,8 +264,9 @@ public sealed class ScreenshotApprovalTests : IDisposable
     [Fact]
     public void A_missing_approved_image_fails_and_writes_the_received_one()
     {
-        var e = Assert.Throws<ApprovalException>(
-            () => Approve.Screenshot(Scene(10, 10).ToPng(), "menu", null, Context()));
+        var e = Assert.Throws<ApprovalException>(() =>
+            Approve.Screenshot(Scene(10, 10).ToPng(), "menu", null, Context())
+        );
 
         Assert.Contains("no approved file", e.Message);
         Assert.True(File.Exists(PathOf("received")));
@@ -267,10 +276,23 @@ public sealed class ScreenshotApprovalTests : IDisposable
     /// Writes a PNG the library's encoder never produces: another colour type or bit depth, optionally Adam7
     /// interlaced, with each row's filter cycling through None, Sub, Up, Average and Paeth.
     /// </summary>
-    private static byte[] HandMadePng(int colorType, int bitDepth, bool interlaced, int width, int height,
-        Func<int, int, int> bit)
+    private static byte[] HandMadePng(
+        int colorType,
+        int bitDepth,
+        bool interlaced,
+        int width,
+        int height,
+        Func<int, int, int> bit
+    )
     {
-        var channels = colorType switch { 0 => 1, 2 => 3, 3 => 1, 4 => 2, _ => 4 };
+        var channels = colorType switch
+        {
+            0 => 1,
+            2 => 3,
+            3 => 1,
+            4 => 2,
+            _ => 4,
+        };
         var max = (1 << bitDepth) - 1;
 
         int Sample(int x, int y, int channel)
@@ -384,7 +406,9 @@ public sealed class ScreenshotApprovalTests : IDisposable
         var pa = Math.Abs(p - a);
         var pb = Math.Abs(p - b);
         var pc = Math.Abs(p - c);
-        return pa <= pb && pa <= pc ? a : pb <= pc ? b : c;
+        return pa <= pb && pa <= pc ? a
+            : pb <= pc ? b
+            : c;
     }
 
     // The decoder does not check CRCs, so the hand-made chunks carry zeros there.

@@ -29,7 +29,8 @@ internal sealed class RpcServer
         string token,
         Action<Request> onHello,
         Action<Request> onRequest,
-        Action<Connection> onClosed)
+        Action<Connection> onClosed
+    )
     {
         this.port = port;
         this.token = token;

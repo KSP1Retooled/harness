@@ -20,9 +20,7 @@ public sealed class SnippetCompileException : Exception
     }
 
     internal SnippetCompileException(string message, string? file, int line)
-        : this([new SnippetCompileError(file ?? "snippet", line, 1, "KSPH0001", message)], null)
-    {
-    }
+        : this([new SnippetCompileError(file ?? "snippet", line, 1, "KSPH0001", message)], null) { }
 
     public IReadOnlyList<SnippetCompileError> Errors { get; }
 
@@ -38,7 +36,8 @@ public sealed class SnippetCompileException : Exception
     internal static SnippetCompileException From(
         ImmutableArray<Diagnostic> diagnostics,
         string generatedSource,
-        Snippets.SourcePosition position)
+        Snippets.SourcePosition position
+    )
     {
         var errors = diagnostics
             .Where(d => d.Severity == DiagnosticSeverity.Error)
@@ -53,7 +52,8 @@ public sealed class SnippetCompileException : Exception
                         position.Line,
                         position.Column,
                         d.Id,
-                        d.GetMessage() + $" (in generated code at {span.Path}:{span.StartLinePosition.Line + 1})");
+                        d.GetMessage() + $" (in generated code at {span.Path}:{span.StartLinePosition.Line + 1})"
+                    );
                 }
 
                 return new SnippetCompileError(
@@ -61,7 +61,8 @@ public sealed class SnippetCompileException : Exception
                     span.StartLinePosition.Line + 1,
                     span.StartLinePosition.Character + 1,
                     d.Id,
-                    d.GetMessage());
+                    d.GetMessage()
+                );
             })
             .ToArray();
 

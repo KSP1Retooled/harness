@@ -23,7 +23,11 @@ public sealed class Bootstrap : MonoBehaviour
 
         if (portText == null || token == null)
             Debug.Log($"[KspHarness] Not started: the game was launched without {PortArgument} and {TokenArgument}");
-        else if (!int.TryParse(portText, NumberStyles.None, CultureInfo.InvariantCulture, out int port) || port < 1 || port > 65535)
+        else if (
+            !int.TryParse(portText, NumberStyles.None, CultureInfo.InvariantCulture, out int port)
+            || port < 1
+            || port > 65535
+        )
             Debug.LogError($"[KspHarness] Not started: {PortArgument} {portText} is not a port number");
         else if (!IsHex(token))
             Debug.LogError($"[KspHarness] Not started: {TokenArgument} must be hexadecimal");

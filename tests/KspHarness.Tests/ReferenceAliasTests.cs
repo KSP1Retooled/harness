@@ -36,7 +36,8 @@ public sealed class ReferenceAliasTests
     {
         await using var fake = await FakeSession.StartAsync(
             install,
-            game => game.OnRun = (_, _) => Task.FromResult<JsonNode?>(1));
+            game => game.OnRun = (_, _) => Task.FromResult<JsonNode?>(1)
+        );
 
         await fake.Session.Run<int>(
             """
@@ -44,7 +45,8 @@ public sealed class ReferenceAliasTests
             var ugui = Object.FindObjectOfType<TMPro.TextMeshProUGUI>();
             return text == null || ugui == null ? 0 : text.text.Length;
             """,
-            cancellationToken: Cancel);
+            cancellationToken: Cancel
+        );
 
         // KSP declares TMPro in Assembly-CSharp; Retooled also ships Unity's copy, which stock-built code never names.
         var assembly = fake.Game.Loaded.Values.Single();
@@ -57,7 +59,8 @@ public sealed class ReferenceAliasTests
     {
         await using var fake = await FakeSession.StartAsync(
             TestInstalls.Retooled,
-            game => game.OnRun = (_, _) => Task.FromResult<JsonNode?>(1));
+            game => game.OnRun = (_, _) => Task.FromResult<JsonNode?>(1)
+        );
 
         await fake.Session.Run<int>(
             """
@@ -65,7 +68,8 @@ public sealed class ReferenceAliasTests
             _Unity_TextMeshPro::TMPro.TMP_Text unity = null;
             return ksp == null && unity == null ? 1 : 0;
             """,
-            cancellationToken: Cancel);
+            cancellationToken: Cancel
+        );
 
         var references = TypeReferenceScopes(fake.Game.Loaded.Values.Single(), "TMPro", "TMP_Text");
         Assert.Equal(["Assembly-CSharp", "Unity.TextMeshPro"], references.Order(StringComparer.Ordinal));
@@ -75,7 +79,11 @@ public sealed class ReferenceAliasTests
     public void Compiler_generated_types_have_no_name()
     {
         var dir = TestInstalls.TempDir("unspeakable");
-        var path = Build(dir, "Iter", "namespace N { public class Foo { public System.Collections.Generic.IEnumerable<int> GetParts() { yield return 1; } } }");
+        var path = Build(
+            dir,
+            "Iter",
+            "namespace N { public class Foo { public System.Collections.Generic.IEnumerable<int> GetParts() { yield return 1; } } }"
+        );
         var references = ReferenceSet.FromFiles([path]).BaseCompilation;
 
         Assert.Equal("global::N.Foo", GameTypeNames.FromGameName(references, "N.Foo"));
@@ -134,7 +142,8 @@ public sealed class ReferenceAliasTests
             name,
             [CSharpSyntaxTree.ParseText(source)],
             [MetadataReference.CreateFromFile(typeof(object).Assembly.Location)],
-            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
+        );
         var result = compilation.Emit(path);
         Assert.True(result.Success, string.Join("\n", result.Diagnostics));
         return path;
@@ -153,8 +162,11 @@ public sealed class ReferenceAliasTests
         foreach (var handle in reader.TypeReferences)
         {
             var reference = reader.GetTypeReference(handle);
-            if (reader.GetString(reference.Namespace) == ns && reader.GetString(reference.Name) == name
-                && reference.ResolutionScope.Kind == HandleKind.AssemblyReference)
+            if (
+                reader.GetString(reference.Namespace) == ns
+                && reader.GetString(reference.Name) == name
+                && reference.ResolutionScope.Kind == HandleKind.AssemblyReference
+            )
             {
                 var scope = reader.GetAssemblyReference((AssemblyReferenceHandle)reference.ResolutionScope);
                 scopes.Add(reader.GetString(scope.Name));

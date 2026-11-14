@@ -8,7 +8,9 @@ namespace KspHarness.Mod.Runtime;
 /// <summary>Loads snippet assemblies by hash and keeps them for the rest of the game's life.</summary>
 internal static class SnippetLoader
 {
-    private static readonly Dictionary<string, Assembly> ByHash = new Dictionary<string, Assembly>(StringComparer.OrdinalIgnoreCase);
+    private static readonly Dictionary<string, Assembly> ByHash = new Dictionary<string, Assembly>(
+        StringComparer.OrdinalIgnoreCase
+    );
     private static readonly HashSet<Assembly> Snippets = new HashSet<Assembly>();
     private static readonly object Gate = new object();
     private static bool resolverInstalled;

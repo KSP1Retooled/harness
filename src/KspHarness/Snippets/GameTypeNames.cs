@@ -86,12 +86,20 @@ internal static class GameTypeNames
             return candidates.FirstOrDefault();
         }
 
-        var priority = references.References
-            .Select((reference, index) => (Symbol: references.GetAssemblyOrModuleSymbol(reference), Index: index))
+        var priority = references
+            .References.Select(
+                (reference, index) => (Symbol: references.GetAssemblyOrModuleSymbol(reference), Index: index)
+            )
             .Where(entry => entry.Symbol is IAssemblySymbol)
-            .ToDictionary(entry => (IAssemblySymbol)entry.Symbol!, entry => entry.Index, SymbolEqualityComparer.Default);
+            .ToDictionary(
+                entry => (IAssemblySymbol)entry.Symbol!,
+                entry => entry.Index,
+                SymbolEqualityComparer.Default
+            );
         var first = candidates.OrderBy(c => priority.GetValueOrDefault(c.ContainingAssembly, int.MaxValue)).First();
-        return assembly is null || string.Equals(first.ContainingAssembly.Name, assembly, StringComparison.OrdinalIgnoreCase)
+        return
+            assembly is null
+            || string.Equals(first.ContainingAssembly.Name, assembly, StringComparison.OrdinalIgnoreCase)
             ? first
             : null;
     }

@@ -13,9 +13,7 @@ public sealed class SuiteRunnerTests
 {
     public sealed class SomeInstall : InstallDefinition
     {
-        public override void Configure(InstallBuilder install)
-        {
-        }
+        public override void Configure(InstallBuilder install) { }
     }
 
     public class BaseSuite : KspSuite<SomeInstall>
@@ -51,14 +49,22 @@ public sealed class SuiteRunnerTests
     [Fact]
     public async Task An_invalid_suite_exits_with_2()
     {
-        var assembly = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName("InvalidSuites"), AssemblyBuilderAccess.Run);
-        var type = assembly.DefineDynamicModule("InvalidSuites").DefineType(
-            "PrivateTestSuite",
-            TypeAttributes.Public | TypeAttributes.Sealed | TypeAttributes.Class,
-            typeof(KspSuite<SomeInstall>));
+        var assembly = AssemblyBuilder.DefineDynamicAssembly(
+            new AssemblyName("InvalidSuites"),
+            AssemblyBuilderAccess.Run
+        );
+        var type = assembly
+            .DefineDynamicModule("InvalidSuites")
+            .DefineType(
+                "PrivateTestSuite",
+                TypeAttributes.Public | TypeAttributes.Sealed | TypeAttributes.Class,
+                typeof(KspSuite<SomeInstall>)
+            );
         type.DefineDefaultConstructor(MethodAttributes.Public);
         var method = type.DefineMethod("Hidden", MethodAttributes.Private, typeof(Task), Type.EmptyTypes);
-        method.SetCustomAttribute(new CustomAttributeBuilder(typeof(TestAttribute).GetConstructor(Type.EmptyTypes)!, []));
+        method.SetCustomAttribute(
+            new CustomAttributeBuilder(typeof(TestAttribute).GetConstructor(Type.EmptyTypes)!, [])
+        );
         var il = method.GetILGenerator();
         il.Emit(OpCodes.Ldnull);
         il.Emit(OpCodes.Ret);
@@ -98,7 +104,8 @@ public sealed class SuiteRunnerTests
     public void Reusable_suite_snippets_compile_against_the_game(string install, Type suite)
     {
         var compiler = TestInstalls.Compiler(install);
-        var snippets = suite.GetFields(BindingFlags.NonPublic | BindingFlags.Static)
+        var snippets = suite
+            .GetFields(BindingFlags.NonPublic | BindingFlags.Static)
             .Where(field => field.FieldType == typeof(LibrarySnippet))
             .ToList();
         Assert.NotEmpty(snippets);
@@ -107,7 +114,12 @@ public sealed class SuiteRunnerTests
         {
             var snippet = (LibrarySnippet)field.GetValue(null)!;
             var prepared = SnippetBuilder.FromString(
-                snippet.Source, returnsValue: true, RunOptions.Default.Usings, snippet.File, snippet.Line);
+                snippet.Source,
+                returnsValue: true,
+                RunOptions.Default.Usings,
+                snippet.File,
+                snippet.Line
+            );
 
             var compiled = compiler.Compile(prepared.Source);
 

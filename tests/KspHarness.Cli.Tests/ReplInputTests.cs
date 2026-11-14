@@ -110,7 +110,10 @@ public sealed class ReplInputTests
     [Fact]
     public void A_throw_ends_input_like_a_return()
     {
-        Assert.Equal(new ReplStep.Snippet("throw new Exception(\"x\");"), new ReplInput().Feed("throw new Exception(\"x\");"));
+        Assert.Equal(
+            new ReplStep.Snippet("throw new Exception(\"x\");"),
+            new ReplInput().Feed("throw new Exception(\"x\");")
+        );
     }
 
     [Fact]

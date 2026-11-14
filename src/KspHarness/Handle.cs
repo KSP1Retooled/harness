@@ -83,6 +83,7 @@ public sealed class Handle : DynamicObject
     {
         return new InvalidOperationException(
             $"'{member}' was used on {this} outside the game. The object lives in the game: move the code that uses "
-            + "it into a Game.Run lambda, where the handle becomes the real object.");
+                + "it into a Game.Run lambda, where the handle becomes the real object."
+        );
     }
 }

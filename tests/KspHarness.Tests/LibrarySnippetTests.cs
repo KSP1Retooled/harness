@@ -12,7 +12,17 @@ public sealed class LibrarySnippetTests
         var data = new TheoryData<string, string, bool>();
         foreach (var install in new[] { TestInstalls.Stock, TestInstalls.Retooled })
         {
-            foreach (var name in new[] { "WaitForMainMenu", "StartSandbox", "Launch", "LoadSave", "QuickSave", "ReturnToMainMenu" })
+            foreach (
+                var name in new[]
+                {
+                    "WaitForMainMenu",
+                    "StartSandbox",
+                    "Launch",
+                    "LoadSave",
+                    "QuickSave",
+                    "ReturnToMainMenu",
+                }
+            )
             {
                 data.Add(install, name, false);
             }
@@ -40,15 +50,19 @@ public sealed class LibrarySnippetTests
     public async Task Database_queries_share_one_assembly()
     {
         var queries = new List<string>();
-        await using var fake = await FakeSession.StartAsync(TestInstalls.Stock, game => game.OnRun = (run, _) =>
-        {
-            lock (queries)
-            {
-                queries.Add(run["args"]![0]!.GetValue<string>());
-            }
+        await using var fake = await FakeSession.StartAsync(
+            TestInstalls.Stock,
+            game =>
+                game.OnRun = (run, _) =>
+                {
+                    lock (queries)
+                    {
+                        queries.Add(run["args"]![0]!.GetValue<string>());
+                    }
 
-            return Task.FromResult<JsonNode?>(new JsonArray("4"));
-        });
+                    return Task.FromResult<JsonNode?>(new JsonArray("4"));
+                }
+        );
 
         var cancel = TestContext.Current.CancellationToken;
         Assert.Equal([4], await fake.Session.Database.Values<int>("PART[a]/mass", cancel));

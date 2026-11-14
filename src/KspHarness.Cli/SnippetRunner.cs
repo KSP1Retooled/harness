@@ -34,7 +34,8 @@ internal static class SnippetRunner
         string code,
         string? file = null,
         TimeSpan? timeout = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         var text = SnippetText.Parse(code);
         if (text.Shape == SnippetShape.Empty)
@@ -42,11 +43,7 @@ internal static class SnippetRunner
             return null;
         }
 
-        var options = new RunOptions
-        {
-            Usings = text.Usings,
-            RealTimeout = timeout ?? RunOptions.Default.RealTimeout,
-        };
+        var options = new RunOptions { Usings = text.Usings, RealTimeout = timeout ?? RunOptions.Default.RealTimeout };
 
         file ??= InputName;
         if (text.Shape == SnippetShape.Expression)
@@ -96,7 +93,8 @@ internal static class SnippetRunner
         {
             SnippetCompileException compile => Describe(compile.Errors),
             InputCompileException compile => Describe(compile.Errors),
-            SnippetException thrown => $"{thrown.GameType}: {thrown.GameMessage}{Environment.NewLine}{UsefulFrames(thrown.GameStackTrace)}".TrimEnd(),
+            SnippetException thrown =>
+                $"{thrown.GameType}: {thrown.GameMessage}{Environment.NewLine}{UsefulFrames(thrown.GameStackTrace)}".TrimEnd(),
             _ => $"{error.GetType().Name}: {error.Message}",
         };
     }
@@ -111,7 +109,9 @@ internal static class SnippetRunner
             "--- End of stack trace from previous location",
         ];
 
-        var lines = stack.ReplaceLineEndings("\n").Split('\n')
+        var lines = stack
+            .ReplaceLineEndings("\n")
+            .Split('\n')
             .Where(line => line.Trim().Length > 0 && !noise.Any(n => line.Contains(n, StringComparison.Ordinal)));
         return string.Join(Environment.NewLine, lines);
     }

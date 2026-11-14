@@ -54,13 +54,21 @@ public sealed class RealInstallTests
         var frozen = new InstanceBuildOptions { LockMode = LockMode.Frozen, Log = options.Log };
         var replayed = await InstanceBuilder.BuildAsync(new CommunityFixes(), start, home, lockPath, frozen, Cancel);
         Assert.Equal(instance.Root, replayed.Root);
-        Assert.Contains("install --no-recommends Harmony2=2.2.1.0",
-            File.ReadAllText(replayed.Path(".harness/ckan.log")).Replace("\"", ""));
+        Assert.Contains(
+            "install --no-recommends Harmony2=2.2.1.0",
+            File.ReadAllText(replayed.Path(".harness/ckan.log")).Replace("\"", "")
+        );
 
         string derivedLock = Path.Combine(lockDir, "CommunityFixesWindowed.stock.lock.json");
         File.Delete(derivedLock);
-        var derived = await InstanceBuilder.BuildAsync(new CommunityFixesWindowed(), start, home, derivedLock, options,
-            Cancel);
+        var derived = await InstanceBuilder.BuildAsync(
+            new CommunityFixesWindowed(),
+            start,
+            home,
+            derivedLock,
+            options,
+            Cancel
+        );
         Assert.Equal(instance.Hash, derived.Record.Parent);
         Assert.Equal("False", SettingsFile.ReadTopLevel(derived.Path("settings.cfg"))["FULLSCREEN"]);
 
@@ -90,20 +98,22 @@ public sealed class RealInstallTests
         Assert.True(Directory.Exists(instance.Path("GameData/KSPCommunityFixes")));
     }
 
-    private static InstanceBuildOptions Options() => new()
-    {
-        Log = message => TestContext.Current.SendDiagnosticMessage(message),
-    };
+    private static InstanceBuildOptions Options() =>
+        new() { Log = message => TestContext.Current.SendDiagnosticMessage(message) };
 
     private static (StartingInstall Start, HarnessHome Home, string LockDir) Setup(string startVariable)
     {
         Assert.SkipUnless(OperatingSystem.IsWindows(), "file identity check is Windows only");
         string? startRoot = Environment.GetEnvironmentVariable(startVariable);
         string? homeRoot = Environment.GetEnvironmentVariable(HarnessHome.EnvironmentVariable);
-        Assert.SkipWhen(string.IsNullOrEmpty(startRoot) || string.IsNullOrEmpty(homeRoot),
-            $"set {startVariable} and {HarnessHome.EnvironmentVariable} to run");
-        Assert.SkipWhen(string.IsNullOrEmpty(Environment.GetEnvironmentVariable(CkanClient.EnvironmentVariable)),
-            $"set {CkanClient.EnvironmentVariable} to run");
+        Assert.SkipWhen(
+            string.IsNullOrEmpty(startRoot) || string.IsNullOrEmpty(homeRoot),
+            $"set {startVariable} and {HarnessHome.EnvironmentVariable} to run"
+        );
+        Assert.SkipWhen(
+            string.IsNullOrEmpty(Environment.GetEnvironmentVariable(CkanClient.EnvironmentVariable)),
+            $"set {CkanClient.EnvironmentVariable} to run"
+        );
 
         var home = new HarnessHome(homeRoot!);
         string lockDir = Path.Combine(home.Root, "test-locks");

@@ -12,15 +12,20 @@ internal static class Polyfills
 {
     private static readonly (string MetadataName, string Source)[] Types =
     [
-        ("System.Runtime.CompilerServices.IsExternalInit", """
+        (
+            "System.Runtime.CompilerServices.IsExternalInit",
+            """
             namespace System.Runtime.CompilerServices
             {
                 internal static class IsExternalInit
                 {
                 }
             }
-            """),
-        ("System.Runtime.CompilerServices.RequiredMemberAttribute", """
+            """
+        ),
+        (
+            "System.Runtime.CompilerServices.RequiredMemberAttribute",
+            """
             namespace System.Runtime.CompilerServices
             {
                 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Field | AttributeTargets.Property, Inherited = false)]
@@ -28,8 +33,11 @@ internal static class Polyfills
                 {
                 }
             }
-            """),
-        ("System.Runtime.CompilerServices.CompilerFeatureRequiredAttribute", """
+            """
+        ),
+        (
+            "System.Runtime.CompilerServices.CompilerFeatureRequiredAttribute",
+            """
             namespace System.Runtime.CompilerServices
             {
                 [AttributeUsage(AttributeTargets.All, AllowMultiple = true, Inherited = false)]
@@ -45,8 +53,11 @@ internal static class Polyfills
                     public bool IsOptional { get; set; }
                 }
             }
-            """),
-        ("System.Diagnostics.CodeAnalysis.SetsRequiredMembersAttribute", """
+            """
+        ),
+        (
+            "System.Diagnostics.CodeAnalysis.SetsRequiredMembersAttribute",
+            """
             namespace System.Diagnostics.CodeAnalysis
             {
                 [AttributeUsage(AttributeTargets.Constructor, Inherited = false)]
@@ -54,8 +65,11 @@ internal static class Polyfills
                 {
                 }
             }
-            """),
-        ("System.Runtime.CompilerServices.IgnoresAccessChecksToAttribute", """
+            """
+        ),
+        (
+            "System.Runtime.CompilerServices.IgnoresAccessChecksToAttribute",
+            """
             namespace System.Runtime.CompilerServices
             {
                 [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
@@ -69,8 +83,11 @@ internal static class Polyfills
                     public string AssemblyName { get; }
                 }
             }
-            """),
-        ("System.Index", """
+            """
+        ),
+        (
+            "System.Index",
+            """
             namespace System
             {
                 internal readonly struct Index
@@ -104,8 +121,11 @@ internal static class Polyfills
                     public static implicit operator Index(int value) => new Index(value);
                 }
             }
-            """),
-        ("System.Range", """
+            """
+        ),
+        (
+            "System.Range",
+            """
             namespace System
             {
                 internal readonly struct Range
@@ -139,7 +159,8 @@ internal static class Polyfills
                     }
                 }
             }
-            """),
+            """
+        ),
     ];
 
     /// <summary>Source for the polyfills the references lack, or null when they have them all.</summary>

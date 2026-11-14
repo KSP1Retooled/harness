@@ -25,7 +25,8 @@ public sealed record LogEvent(
     LogLevel Level,
     string Message,
     string Stack,
-    IReadOnlyList<string> Mods) : GameEvent("log", Seq, RealTime, Frame, Ut, Data)
+    IReadOnlyList<string> Mods
+) : GameEvent("log", Seq, RealTime, Frame, Ut, Data)
 {
     /// <summary>Error, Exception and Assert entries.</summary>
     public bool IsError => Level is LogLevel.Error or LogLevel.Exception or LogLevel.Assert;
@@ -45,7 +46,8 @@ public sealed record SceneEvent(
     JsonObject Data,
     string From,
     string To,
-    string Phase) : GameEvent("scene", Seq, RealTime, Frame, Ut, Data);
+    string Phase
+) : GameEvent("scene", Seq, RealTime, Frame, Ut, Data);
 
 public sealed record DialogEvent(
     long Seq,
@@ -56,7 +58,8 @@ public sealed record DialogEvent(
     string Name,
     string Title,
     string Message,
-    IReadOnlyList<string> Buttons) : GameEvent("dialog", Seq, RealTime, Frame, Ut, Data)
+    IReadOnlyList<string> Buttons
+) : GameEvent("dialog", Seq, RealTime, Frame, Ut, Data)
 {
     /// <summary>The dialog's instance id in the game; the events of one dialog share it.</summary>
     public long Id => Data["id"]?.GetValue<long>() ?? 0;
@@ -120,9 +123,19 @@ internal static class GameEventParser
                     Enum.TryParse<LogLevel>(Text(data, "level"), out var level) ? level : LogLevel.Log,
                     Text(data, "message"),
                     Text(data, "stack"),
-                    Strings(data["mods"]));
+                    Strings(data["mods"])
+                );
             case "scene":
-                return new SceneEvent(seq, realTime, frame, ut, data, Text(data, "from"), Text(data, "to"), Text(data, "phase"));
+                return new SceneEvent(
+                    seq,
+                    realTime,
+                    frame,
+                    ut,
+                    data,
+                    Text(data, "from"),
+                    Text(data, "to"),
+                    Text(data, "phase")
+                );
             case "dialog":
                 return new DialogEvent(
                     seq,
@@ -133,7 +146,8 @@ internal static class GameEventParser
                     Text(data, "name"),
                     Text(data, "title"),
                     Text(data, "message"),
-                    Strings(data["buttons"]));
+                    Strings(data["buttons"])
+                );
             case "crashing":
                 return new CrashingEvent(seq, realTime, frame, ut, data, Text(data, "message"));
             default:

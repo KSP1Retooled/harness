@@ -73,8 +73,12 @@ internal static partial class HardLinks
         return path.Length < 240 || path.StartsWith(@"\\?\", StringComparison.Ordinal) ? path : @"\\?\" + path;
     }
 
-    [LibraryImport("kernel32.dll", EntryPoint = "CreateHardLinkW", StringMarshalling = StringMarshalling.Utf16,
-        SetLastError = true)]
+    [LibraryImport(
+        "kernel32.dll",
+        EntryPoint = "CreateHardLinkW",
+        StringMarshalling = StringMarshalling.Utf16,
+        SetLastError = true
+    )]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static partial bool CreateHardLinkW(string fileName, string existingFileName, IntPtr securityAttributes);
 

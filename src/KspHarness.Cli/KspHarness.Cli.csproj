@@ -1,5 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <OutputType>Exe</OutputType>
@@ -30,5 +29,4 @@
   <Target Name="RequireDriverModForPack" BeforeTargets="GenerateNuspec" Condition="'$(KspDir)' == ''">
     <Error Text="pack with KSP_DIR set (a stock KSP 1.12.5 install) so that the driver mod ships inside the tool" />
   </Target>
-
 </Project>

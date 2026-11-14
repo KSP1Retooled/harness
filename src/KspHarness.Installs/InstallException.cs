@@ -3,14 +3,10 @@ namespace KspHarness.Installs;
 public class InstallException : Exception
 {
     public InstallException(string message)
-        : base(message)
-    {
-    }
+        : base(message) { }
 
     public InstallException(string message, Exception inner)
-        : base(message, inner)
-    {
-    }
+        : base(message, inner) { }
 }
 
 /// <summary>A CKAN run failed. The message ends with the tail of the CKAN log.</summary>

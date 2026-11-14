@@ -4,9 +4,7 @@ namespace KspHarness.Suites;
 public sealed class CheckFailedException : Exception
 {
     public CheckFailedException(string message)
-        : base(message)
-    {
-    }
+        : base(message) { }
 }
 
 /// <summary>The few assertions a suite needs; anything else that throws fails a test just as well.</summary>

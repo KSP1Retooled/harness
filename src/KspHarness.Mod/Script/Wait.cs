@@ -51,8 +51,14 @@ public static class Wait
         timeout.HasValue ? GameClock.GameSeconds + timeout.Value.TotalSeconds : (double?)null;
 
     private static TimeoutException TimedOut(string what, double deadline) =>
-        new TimeoutException(string.Format(
-            CultureInfo.InvariantCulture, "Timed out waiting for {0} (game-time deadline {1:0.###} s)", what, deadline));
+        new TimeoutException(
+            string.Format(
+                CultureInfo.InvariantCulture,
+                "Timed out waiting for {0} (game-time deadline {1:0.###} s)",
+                what,
+                deadline
+            )
+        );
 
     private sealed class UntilAwaitable : ScriptAwaitable
     {

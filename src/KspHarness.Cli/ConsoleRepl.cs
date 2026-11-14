@@ -43,7 +43,9 @@ internal sealed class ConsoleRepl(GameSession game, TextReader input, TextWriter
     public async Task<int> RunAsync(CancellationToken cancellationToken = default)
     {
         var attachedAt = game.Log.Cursor;
-        output.WriteLine($"attached to KSP {game.Info.Ksp}{(game.Info.Retooled ? " (Retooled)" : "")}, pid {game.Info.Pid}, scene {game.Info.Scene}. :help for help.");
+        output.WriteLine(
+            $"attached to KSP {game.Info.Ksp}{(game.Info.Retooled ? " (Retooled)" : "")}, pid {game.Info.Pid}, scene {game.Info.Scene}. :help for help."
+        );
         var reader = new ReplInput();
         while (!cancellationToken.IsCancellationRequested)
         {
@@ -131,9 +133,10 @@ internal sealed class ConsoleRepl(GameSession game, TextReader input, TextWriter
                 break;
             case "screenshot":
             {
-                var path = command.Argument.Length > 0
-                    ? Path.GetFullPath(command.Argument)
-                    : DefaultScreenshotPath(game.InstanceDir);
+                var path =
+                    command.Argument.Length > 0
+                        ? Path.GetFullPath(command.Argument)
+                        : DefaultScreenshotPath(game.InstanceDir);
                 await game.ScreenshotAsync(path, cancellationToken: cancellationToken);
                 output.WriteLine(path);
                 break;
@@ -142,7 +145,10 @@ internal sealed class ConsoleRepl(GameSession game, TextReader input, TextWriter
             case "log":
             {
                 var count = 20;
-                if (command.Argument.Length > 0 && (!int.TryParse(command.Argument, CultureInfo.InvariantCulture, out count) || count < 1))
+                if (
+                    command.Argument.Length > 0
+                    && (!int.TryParse(command.Argument, CultureInfo.InvariantCulture, out count) || count < 1)
+                )
                 {
                     errors.WriteLine(":log takes a positive count");
                     break;
@@ -174,15 +180,19 @@ internal sealed class ConsoleRepl(GameSession game, TextReader input, TextWriter
 
             case "ui":
             {
-                var source = command.Argument.Length > 0
-                    ? $"return Ui.Describe({Literal(command.Argument)});"
-                    : "return Ui.Describe();";
+                var source =
+                    command.Argument.Length > 0
+                        ? $"return Ui.Describe({Literal(command.Argument)});"
+                        : "return Ui.Describe();";
                 output.WriteLine(await game.Run<string>(source, cancellationToken: cancellationToken));
                 break;
             }
 
             case "click" when command.Argument.Length > 0:
-                await game.Run($"await Ui.ClickText({Literal(command.Argument)});", cancellationToken: cancellationToken);
+                await game.Run(
+                    $"await Ui.ClickText({Literal(command.Argument)});",
+                    cancellationToken: cancellationToken
+                );
                 output.WriteLine("clicked");
                 break;
             case "dialogs":
@@ -194,19 +204,27 @@ internal sealed class ConsoleRepl(GameSession game, TextReader input, TextWriter
 
             case "db" when command.Argument.Length > 0:
             {
-                var nodes = await game.Run<List<string>>($"return Database.Query({Literal(command.Argument)});", cancellationToken: cancellationToken);
+                var nodes = await game.Run<List<string>>(
+                    $"return Database.Query({Literal(command.Argument)});",
+                    cancellationToken: cancellationToken
+                );
                 output.WriteLine(nodes.Count == 0 ? "no matching nodes" : string.Join(Environment.NewLine, nodes));
                 break;
             }
 
             case "scene":
             {
-                var value = await SnippetRunner.RunAsync(game, "HighLogic.LoadedScene.ToString()", cancellationToken: cancellationToken);
+                var value = await SnippetRunner.RunAsync(
+                    game,
+                    "HighLogic.LoadedScene.ToString()",
+                    cancellationToken: cancellationToken
+                );
                 output.WriteLine(SnippetRunner.Format(value));
                 break;
             }
 
-            case "click" or "db":
+            case "click"
+            or "db":
                 errors.WriteLine($":{command.Name} needs an argument; :help lists the commands");
                 break;
             default:

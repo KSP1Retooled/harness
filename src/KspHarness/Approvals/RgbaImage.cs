@@ -4,9 +4,7 @@ namespace KspHarness.Approvals;
 public sealed class RgbaImage
 {
     public RgbaImage(int width, int height)
-        : this(width, height, new byte[checked(width * height * 4)])
-    {
-    }
+        : this(width, height, new byte[checked(width * height * 4)]) { }
 
     public RgbaImage(int width, int height, byte[] pixels)
     {

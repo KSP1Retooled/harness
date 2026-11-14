@@ -29,7 +29,8 @@ internal sealed class CommandLine
     public static CommandLine Parse(
         IEnumerable<string> args,
         IReadOnlyCollection<string>? valueOptions = null,
-        IReadOnlyCollection<string>? flagOptions = null)
+        IReadOnlyCollection<string>? flagOptions = null
+    )
     {
         valueOptions ??= [];
         flagOptions ??= [];

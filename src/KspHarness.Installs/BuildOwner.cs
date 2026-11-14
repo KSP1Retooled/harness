@@ -22,9 +22,11 @@ internal static class BuildOwner
     public static bool IsAlive(string text)
     {
         string[] parts = text.Trim().Split(' ');
-        if (parts.Length != 2
+        if (
+            parts.Length != 2
             || !int.TryParse(parts[0], CultureInfo.InvariantCulture, out int processId)
-            || !long.TryParse(parts[1], CultureInfo.InvariantCulture, out long startTicks))
+            || !long.TryParse(parts[1], CultureInfo.InvariantCulture, out long startTicks)
+        )
         {
             return true;
         }

@@ -1,6 +1,6 @@
 using System.Runtime.CompilerServices;
-using KspHarness.Script;
 using KSP.UI.Screens;
+using KspHarness.Script;
 using UnityEngine;
 
 namespace KspHarness.GameTests;
@@ -10,7 +10,8 @@ namespace KspHarness.GameTests;
 /// awaits. Each test sets up the scene it needs, so they pass in any order.
 /// </summary>
 [Trait("Category", "Game")]
-public abstract class GameTests<TFixture>(TFixture fixture) where TFixture : GameFixture
+public abstract class GameTests<TFixture>(TFixture fixture)
+    where TFixture : GameFixture
 {
     private const double TargetAltitude = 1000;
 
@@ -23,9 +24,11 @@ public abstract class GameTests<TFixture>(TFixture fixture) where TFixture : Gam
     {
         var game = Game;
 
-        Output($"{game.Info.Ksp} retooled={game.Info.Retooled} unity={game.Info.Unity}: instance built in "
-            + $"{fixture.BuildTime.TotalSeconds:0.0} s, mod listening after {fixture.ConnectTime.TotalSeconds:0.0} s, "
-            + $"main menu after {fixture.BootTime.TotalSeconds:0.0} s");
+        Output(
+            $"{game.Info.Ksp} retooled={game.Info.Retooled} unity={game.Info.Unity}: instance built in "
+                + $"{fixture.BuildTime.TotalSeconds:0.0} s, mod listening after {fixture.ConnectTime.TotalSeconds:0.0} s, "
+                + $"main menu after {fixture.BootTime.TotalSeconds:0.0} s"
+        );
         Assert.Equal(1, game.Info.Protocol);
         Assert.Equal(game.Process!.Id, game.Info.Pid);
         Assert.Equal(TestedRetooled, game.Info.Retooled);
@@ -61,7 +64,8 @@ public abstract class GameTests<TFixture>(TFixture fixture) where TFixture : Gam
             return found.ToArray();
             """,
             new RunOptions { RealTimeout = TimeSpan.FromMinutes(2) },
-            Cancel);
+            Cancel
+        );
 
         Assert.Empty(found);
     }
@@ -76,7 +80,8 @@ public abstract class GameTests<TFixture>(TFixture fixture) where TFixture : Gam
             await Tick.Update;
             return Time.frameCount - frame + 41;
             """,
-            cancellationToken: Cancel);
+            cancellationToken: Cancel
+        );
 
         Assert.Equal(Game.Info.Unity, unity);
         Assert.Equal(42, answer);
@@ -87,13 +92,16 @@ public abstract class GameTests<TFixture>(TFixture fixture) where TFixture : Gam
     {
         var frame = await Game.Run(() => Time.frameCount, cancellationToken: Cancel);
         var whole = await Game.Run(() => Math.Floor(Time.realtimeSinceStartup) + 1.0, cancellationToken: Cancel);
-        var later = await Game.Run(async () =>
-        {
-            int start = Time.frameCount;
-            await Tick.Update;
-            await Tick.Update;
-            return Time.frameCount - start;
-        }, cancellationToken: Cancel);
+        var later = await Game.Run(
+            async () =>
+            {
+                int start = Time.frameCount;
+                await Tick.Update;
+                await Tick.Update;
+                return Time.frameCount - start;
+            },
+            cancellationToken: Cancel
+        );
 
         Assert.True(frame > 0);
         Assert.True(whole >= 1.0);
@@ -104,11 +112,14 @@ public abstract class GameTests<TFixture>(TFixture fixture) where TFixture : Gam
     public async Task Dynamic_lambda_runs()
     {
         var scene = await Game.Run(ksp => ksp.HighLogic.LoadedScene.ToString(), cancellationToken: Cancel);
-        var fixedStep = await Game.Run(async ksp =>
-        {
-            await Tick.FixedUpdate;
-            return ksp.Time.inFixedTimeStep;
-        }, cancellationToken: Cancel);
+        var fixedStep = await Game.Run(
+            async ksp =>
+            {
+                await Tick.FixedUpdate;
+                return ksp.Time.inFixedTimeStep;
+            },
+            cancellationToken: Cancel
+        );
         var whole = await Game.Run(ksp => 3.0, cancellationToken: Cancel);
 
         Assert.IsType<string>(scene);
@@ -126,7 +137,8 @@ public abstract class GameTests<TFixture>(TFixture fixture) where TFixture : Gam
         var name = await Game.Run<string>("return MainMenu.pName;", cancellationToken: Cancel);
         var invalidNames = await Game.Run<int>(
             "return Object.FindObjectOfType<MainMenu>().invalidNames.Count;",
-            cancellationToken: Cancel);
+            cancellationToken: Cancel
+        );
         var mode = await Game.Run(ksp => ksp.MainMenu.newGameMode.ToString(), cancellationToken: Cancel);
 
         Assert.False(string.IsNullOrEmpty(name));
@@ -163,7 +175,8 @@ public abstract class GameTests<TFixture>(TFixture fixture) where TFixture : Gam
             return new { vessel.srfSpeed, vessel.altitude, thread, steps, offThread, outsideFixedStep, sameFixedTime };
             """,
             FlightOptions,
-            Cancel);
+            Cancel
+        );
 
         CheckFlight(flight);
     }
@@ -174,37 +187,51 @@ public abstract class GameTests<TFixture>(TFixture fixture) where TFixture : Gam
         await PrepareFlightAsync();
 
         double target = TargetAltitude;
-        var flight = await Game.Run(async () =>
-        {
-            var vessel = FlightGlobals.ActiveVessel;
-            int thread = System.Threading.Thread.CurrentThread.ManagedThreadId;
-            vessel.ActionGroups.SetGroup(KSPActionGroup.SAS, true);
-            FlightInputHandler.state.mainThrottle = 1f;
-            StageManager.ActivateNextStage();
-
-            int steps = 0, offThread = 0, outsideFixedStep = 0, sameFixedTime = 0;
-            double lastFixedTime = Time.fixedTime, start = Time.fixedTime;
-            while (vessel.altitude < target && Time.fixedTime - start < 120)
+        var flight = await Game.Run(
+            async () =>
             {
-                await Tick.FixedUpdate;
-                steps++;
-                if (System.Threading.Thread.CurrentThread.ManagedThreadId != thread) offThread++;
-                if (!Time.inFixedTimeStep) outsideFixedStep++;
-                if (Time.fixedTime == lastFixedTime) sameFixedTime++;
-                lastFixedTime = Time.fixedTime;
-            }
+                var vessel = FlightGlobals.ActiveVessel;
+                int thread = System.Threading.Thread.CurrentThread.ManagedThreadId;
+                vessel.ActionGroups.SetGroup(KSPActionGroup.SAS, true);
+                FlightInputHandler.state.mainThrottle = 1f;
+                StageManager.ActivateNextStage();
 
-            return (vessel.srfSpeed, vessel.altitude, thread, steps, offThread, outsideFixedStep, sameFixedTime);
-        }, FlightOptions, Cancel);
+                int steps = 0,
+                    offThread = 0,
+                    outsideFixedStep = 0,
+                    sameFixedTime = 0;
+                double lastFixedTime = Time.fixedTime,
+                    start = Time.fixedTime;
+                while (vessel.altitude < target && Time.fixedTime - start < 120)
+                {
+                    await Tick.FixedUpdate;
+                    steps++;
+                    if (System.Threading.Thread.CurrentThread.ManagedThreadId != thread)
+                        offThread++;
+                    if (!Time.inFixedTimeStep)
+                        outsideFixedStep++;
+                    if (Time.fixedTime == lastFixedTime)
+                        sameFixedTime++;
+                    lastFixedTime = Time.fixedTime;
+                }
 
-        CheckFlight(new FlightResult(
-            flight.srfSpeed,
-            flight.altitude,
-            flight.thread,
-            flight.steps,
-            flight.offThread,
-            flight.outsideFixedStep,
-            flight.sameFixedTime));
+                return (vessel.srfSpeed, vessel.altitude, thread, steps, offThread, outsideFixedStep, sameFixedTime);
+            },
+            FlightOptions,
+            Cancel
+        );
+
+        CheckFlight(
+            new FlightResult(
+                flight.srfSpeed,
+                flight.altitude,
+                flight.thread,
+                flight.steps,
+                flight.offThread,
+                flight.outsideFixedStep,
+                flight.sameFixedTime
+            )
+        );
     }
 
     [Fact]
@@ -213,49 +240,75 @@ public abstract class GameTests<TFixture>(TFixture fixture) where TFixture : Gam
         await PrepareFlightAsync();
 
         double target = TargetAltitude;
-        var flight = await Game.Run(async ksp =>
-        {
-            var vessel = ksp.FlightGlobals.ActiveVessel;
-            int thread = System.Threading.Thread.CurrentThread.ManagedThreadId;
-            vessel.ActionGroups.SetGroup(ksp.KSPActionGroup.SAS, true);
-            ksp.FlightInputHandler.state.mainThrottle = 1f;
-            ksp.StageManager.ActivateNextStage();
-
-            int steps = 0, offThread = 0, outsideFixedStep = 0, sameFixedTime = 0;
-            double lastFixedTime = ksp.Time.fixedTime, start = ksp.Time.fixedTime;
-            while (vessel.altitude < target && ksp.Time.fixedTime - start < 120)
+        var flight = await Game.Run(
+            async ksp =>
             {
-                await Tick.FixedUpdate;
-                steps++;
-                if (System.Threading.Thread.CurrentThread.ManagedThreadId != thread) offThread++;
-                if (!ksp.Time.inFixedTimeStep) outsideFixedStep++;
-                if (ksp.Time.fixedTime == lastFixedTime) sameFixedTime++;
-                lastFixedTime = ksp.Time.fixedTime;
-            }
+                var vessel = ksp.FlightGlobals.ActiveVessel;
+                int thread = System.Threading.Thread.CurrentThread.ManagedThreadId;
+                vessel.ActionGroups.SetGroup(ksp.KSPActionGroup.SAS, true);
+                ksp.FlightInputHandler.state.mainThrottle = 1f;
+                ksp.StageManager.ActivateNextStage();
 
-            return new { vessel.srfSpeed, vessel.altitude, thread, steps, offThread, outsideFixedStep, sameFixedTime };
-        }, FlightOptions, Cancel);
+                int steps = 0,
+                    offThread = 0,
+                    outsideFixedStep = 0,
+                    sameFixedTime = 0;
+                double lastFixedTime = ksp.Time.fixedTime,
+                    start = ksp.Time.fixedTime;
+                while (vessel.altitude < target && ksp.Time.fixedTime - start < 120)
+                {
+                    await Tick.FixedUpdate;
+                    steps++;
+                    if (System.Threading.Thread.CurrentThread.ManagedThreadId != thread)
+                        offThread++;
+                    if (!ksp.Time.inFixedTimeStep)
+                        outsideFixedStep++;
+                    if (ksp.Time.fixedTime == lastFixedTime)
+                        sameFixedTime++;
+                    lastFixedTime = ksp.Time.fixedTime;
+                }
+
+                return new
+                {
+                    vessel.srfSpeed,
+                    vessel.altitude,
+                    thread,
+                    steps,
+                    offThread,
+                    outsideFixedStep,
+                    sameFixedTime,
+                };
+            },
+            FlightOptions,
+            Cancel
+        );
 
         Assert.NotNull(flight);
-        CheckFlight(new FlightResult(
-            (double)flight!.srfSpeed,
-            (double)flight.altitude,
-            (int)flight.thread,
-            (int)flight.steps,
-            (int)flight.offThread,
-            (int)flight.outsideFixedStep,
-            (int)flight.sameFixedTime));
+        CheckFlight(
+            new FlightResult(
+                (double)flight!.srfSpeed,
+                (double)flight.altitude,
+                (int)flight.thread,
+                (int)flight.steps,
+                (int)flight.offThread,
+                (int)flight.outsideFixedStep,
+                (int)flight.sameFixedTime
+            )
+        );
     }
 
     [Fact]
     public async Task Game_exception_becomes_a_snippet_exception()
     {
-        var error = await Assert.ThrowsAsync<SnippetException>(() => Game.Run(
-            """
-            await Tick.Update;
-            throw new InvalidOperationException("harness test failure");
-            """,
-            cancellationToken: Cancel));
+        var error = await Assert.ThrowsAsync<SnippetException>(() =>
+            Game.Run(
+                """
+                await Tick.Update;
+                throw new InvalidOperationException("harness test failure");
+                """,
+                cancellationToken: Cancel
+            )
+        );
 
         Assert.Equal("System.InvalidOperationException", error.GameType);
         Assert.Equal("harness test failure", error.GameMessage);
@@ -267,12 +320,14 @@ public abstract class GameTests<TFixture>(TFixture fixture) where TFixture : Gam
     public async Task Compile_error_points_at_the_test_line()
     {
         int stringLine = Line() + 2;
-        var fromString = await Assert.ThrowsAsync<SnippetCompileException>(() => Game.Run<int>(
-            "return notDeclaredAnywhere;",
-            cancellationToken: Cancel));
+        var fromString = await Assert.ThrowsAsync<SnippetCompileException>(() =>
+            Game.Run<int>("return notDeclaredAnywhere;", cancellationToken: Cancel)
+        );
 
         int lambdaLine = Line() + 1;
-        var fromLambda = await Assert.ThrowsAsync<SnippetCompileException>(() => Game.Run(ksp => ksp.NoSuchGameType.Value, cancellationToken: Cancel));
+        var fromLambda = await Assert.ThrowsAsync<SnippetCompileException>(() =>
+            Game.Run(ksp => ksp.NoSuchGameType.Value, cancellationToken: Cancel)
+        );
 
         Assert.Equal(stringLine, fromString.Line);
         Assert.Equal(ThisFile(), fromString.File);
@@ -300,10 +355,9 @@ public abstract class GameTests<TFixture>(TFixture fixture) where TFixture : Gam
     public async Task Real_time_timeout_stops_the_snippet()
     {
         var clock = System.Diagnostics.Stopwatch.StartNew();
-        await Assert.ThrowsAsync<TimeoutException>(() => Game.Run(
-            "await Wait.RealSeconds(60);",
-            new RunOptions { RealTimeout = TimeSpan.FromSeconds(2) },
-            Cancel));
+        await Assert.ThrowsAsync<TimeoutException>(() =>
+            Game.Run("await Wait.RealSeconds(60);", new RunOptions { RealTimeout = TimeSpan.FromSeconds(2) }, Cancel)
+        );
         var elapsed = clock.Elapsed;
 
         Assert.InRange(elapsed.TotalSeconds, 1.5, 20);
@@ -316,15 +370,26 @@ public abstract class GameTests<TFixture>(TFixture fixture) where TFixture : Gam
         var cursor = Game.Log.Cursor;
         var marker = Guid.NewGuid().ToString("N");
 
-        await Game.Run(() =>
-        {
-            Debug.Log("harness info " + marker);
-            Debug.LogError("harness error " + marker);
-        }, cancellationToken: Cancel);
-        var error = await Game.Log.WaitForMessageAsync("harness error " + marker, TimeSpan.FromSeconds(10), cursor, Cancel);
+        await Game.Run(
+            () =>
+            {
+                Debug.Log("harness info " + marker);
+                Debug.LogError("harness error " + marker);
+            },
+            cancellationToken: Cancel
+        );
+        var error = await Game.Log.WaitForMessageAsync(
+            "harness error " + marker,
+            TimeSpan.FromSeconds(10),
+            cursor,
+            Cancel
+        );
 
         Assert.Equal(LogLevel.Error, error.Level);
-        Assert.Contains(Game.Log.LogsSince(cursor), e => e.Message == "harness info " + marker && e.Level == LogLevel.Log);
+        Assert.Contains(
+            Game.Log.LogsSince(cursor),
+            e => e.Message == "harness info " + marker && e.Level == LogLevel.Log
+        );
         var errors = Game.Log.ErrorsSince(cursor);
         Assert.Contains(errors, e => e.Message == "harness error " + marker);
         Assert.DoesNotContain(errors, e => e.Message.Contains("harness info", StringComparison.Ordinal));
@@ -347,9 +412,7 @@ public abstract class GameTests<TFixture>(TFixture fixture) where TFixture : Gam
         var cursor = Game.Log.Cursor;
         await Game.LaunchCraftAsync(cancellationToken: Cancel);
         Output($"Kerbal X on the pad after {clock.Elapsed.TotalSeconds:0.0} s");
-        Assert.Contains(
-            Game.Log.Since(cursor),
-            e => e is SceneEvent { To: "FLIGHT", Phase: "loaded" });
+        Assert.Contains(Game.Log.Since(cursor), e => e is SceneEvent { To: "FLIGHT", Phase: "loaded" });
     }
 
     private static void CheckFlight(FlightResult flight)
@@ -378,7 +441,8 @@ public sealed record FlightResult(
     int Steps,
     int OffThread,
     int OutsideFixedStep,
-    int SameFixedTime);
+    int SameFixedTime
+);
 
 // One collection, so that the two games never run at once.
 [Collection("Game")]
@@ -389,7 +453,8 @@ public sealed class StockGameTests(StockFixture fixture) : GameTests<StockFixtur
 
 [Collection("Game")]
 public sealed class RetooledGameTests(RetooledFixture fixture)
-    : GameTests<RetooledFixture>(fixture), IClassFixture<RetooledFixture>
+    : GameTests<RetooledFixture>(fixture),
+        IClassFixture<RetooledFixture>
 {
     protected override bool TestedRetooled => true;
 }

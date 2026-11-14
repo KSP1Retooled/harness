@@ -25,6 +25,9 @@ public sealed class SnippetRunnerTests
     public void Results_print_as_indented_json_and_null()
     {
         Assert.Equal("null", SnippetRunner.Format(null));
-        Assert.Equal("[\n  1,\n  \"é\"\n]", SnippetRunner.Format(System.Text.Json.Nodes.JsonNode.Parse("[1,\"é\"]")).ReplaceLineEndings("\n"));
+        Assert.Equal(
+            "[\n  1,\n  \"é\"\n]",
+            SnippetRunner.Format(System.Text.Json.Nodes.JsonNode.Parse("[1,\"é\"]")).ReplaceLineEndings("\n")
+        );
     }
 }

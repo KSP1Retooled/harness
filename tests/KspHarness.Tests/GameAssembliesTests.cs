@@ -22,7 +22,8 @@ public sealed class GameAssembliesTests
             Path.Combine(dir, "tests"),
             "FakeSuite",
             "public static class Probe { public static System.Type Scenes => typeof(GameScenes); }",
-            [stockGame]);
+            [stockGame]
+        );
 
         var inStock = SceneType(GameAssemblies.LoadInto(stock, tests));
         var inRetooled = SceneType(GameAssemblies.LoadInto(retooled, tests));
@@ -38,7 +39,9 @@ public sealed class GameAssembliesTests
         Assert.ThrowsAny<ArgumentException>(() => GameValue.Convert(value, inStock, null));
 
         // The harness's own types are shared, so the runner can use what the copies create.
-        var harnessInCopy = GameAssemblies.ContextFor(retooled).LoadFromAssemblyName(typeof(GameSession).Assembly.GetName());
+        var harnessInCopy = GameAssemblies
+            .ContextFor(retooled)
+            .LoadFromAssemblyName(typeof(GameSession).Assembly.GetName());
         Assert.Same(typeof(GameSession).Assembly, harnessInCopy);
     }
 
@@ -58,7 +61,8 @@ public sealed class GameAssembliesTests
                 MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
                 .. references.Select(r => MetadataReference.CreateFromFile(r)),
             ],
-            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
+        );
         var result = compilation.Emit(path);
         Assert.True(result.Success, string.Join("\n", result.Diagnostics));
         return path;

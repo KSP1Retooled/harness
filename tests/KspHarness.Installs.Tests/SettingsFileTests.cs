@@ -19,15 +19,20 @@ public sealed class SettingsFileTests
     public void Replaces_top_level_values_and_keeps_nodes()
     {
         using var dir = new TempDir();
-        string path = dir.Write("settings.cfg",
-            "// KSP Game Settings\r\n\r\nSETTINGS_FILE_VERSION = 1.12.5\r\nUI_SCALE = 1\r\nAXIS_PITCH\r\n{\r\n\tUI_SCALE = 7\r\n}\r\n");
+        string path = dir.Write(
+            "settings.cfg",
+            "// KSP Game Settings\r\n\r\nSETTINGS_FILE_VERSION = 1.12.5\r\nUI_SCALE = 1\r\nAXIS_PITCH\r\n{\r\n\tUI_SCALE = 7\r\n}\r\n"
+        );
 
         SettingsFile.Apply(path, [KeyValuePair.Create("UI_SCALE", "1.5"), KeyValuePair.Create("NEW_KEY", "True")]);
 
         string text = File.ReadAllText(path);
         Assert.Contains("UI_SCALE = 1.5\r\n", text);
         Assert.Contains("\tUI_SCALE = 7\r\n", text);
-        Assert.True(text.IndexOf("NEW_KEY = True", StringComparison.Ordinal) < text.IndexOf("AXIS_PITCH", StringComparison.Ordinal));
+        Assert.True(
+            text.IndexOf("NEW_KEY = True", StringComparison.Ordinal)
+                < text.IndexOf("AXIS_PITCH", StringComparison.Ordinal)
+        );
         Assert.Equal(2, text.Split("SETTINGS_FILE_VERSION").Length);
         Assert.Equal("1.5", SettingsFile.ReadTopLevel(path)["UI_SCALE"]);
     }

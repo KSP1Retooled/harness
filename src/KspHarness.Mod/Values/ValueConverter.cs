@@ -138,7 +138,10 @@ internal static class ValueConverter
         for (int i = 0; i < components.Length; i++)
         {
             FieldInfo field = target.GetField(fields[i]);
-            field.SetValue(result, System.Convert.ChangeType(components[i], field.FieldType, CultureInfo.InvariantCulture));
+            field.SetValue(
+                result,
+                System.Convert.ChangeType(components[i], field.FieldType, CultureInfo.InvariantCulture)
+            );
         }
 
         return result;
@@ -193,7 +196,8 @@ internal static class ValueConverter
             return false;
 
         Type definition = target.GetGenericTypeDefinition();
-        bool acceptsList = definition == typeof(List<>)
+        bool acceptsList =
+            definition == typeof(List<>)
             || definition == typeof(IList<>)
             || definition == typeof(ICollection<>)
             || definition == typeof(IEnumerable<>)
@@ -249,9 +253,12 @@ internal static class ValueConverter
 
         Type definition = target.GetGenericTypeDefinition();
         Type[] arguments = target.GetGenericArguments();
-        bool accepts = (definition == typeof(Dictionary<,>)
+        bool accepts =
+            (
+                definition == typeof(Dictionary<,>)
                 || definition == typeof(IDictionary<,>)
-                || definition == typeof(IReadOnlyDictionary<,>))
+                || definition == typeof(IReadOnlyDictionary<,>)
+            )
             && arguments[0] == typeof(string);
         if (!accepts)
             return false;
@@ -264,12 +271,13 @@ internal static class ValueConverter
     private static InvalidCastException Mismatch(object value, Type target) =>
         new InvalidCastException($"A {Describe(value)} cannot be converted to {target}");
 
-    private static string Describe(object value) => value switch
-    {
-        TaggedEnum taggedEnum => "enum " + taggedEnum.Type,
-        TaggedVector vector => "vector " + vector.Type,
-        Dictionary<string, object> => "JSON object",
-        object[] => "JSON array",
-        _ => value.GetType().Name,
-    };
+    private static string Describe(object value) =>
+        value switch
+        {
+            TaggedEnum taggedEnum => "enum " + taggedEnum.Type,
+            TaggedVector vector => "vector " + vector.Type,
+            Dictionary<string, object> => "JSON object",
+            object[] => "JSON array",
+            _ => value.GetType().Name,
+        };
 }

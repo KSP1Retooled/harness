@@ -69,9 +69,7 @@ public sealed class ArchiveCache
             {
                 File.Move(partial, path);
             }
-            catch (IOException) when (File.Exists(path))
-            {
-            }
+            catch (IOException) when (File.Exists(path)) { }
         }
         finally
         {
@@ -95,7 +93,8 @@ public sealed class ArchiveCache
     public static int Unpack(string archive, string destDir)
     {
         using var zip = ZipFile.OpenRead(archive);
-        var files = zip.Entries.Where(entry => !entry.FullName.EndsWith('/') && !entry.FullName.EndsWith('\\'))
+        var files = zip
+            .Entries.Where(entry => !entry.FullName.EndsWith('/') && !entry.FullName.EndsWith('\\'))
             .Select(entry => (Entry: entry, Path: entry.FullName.Replace('\\', '/').TrimStart('/')))
             .ToList();
 
@@ -133,7 +132,9 @@ public sealed class ArchiveCache
         }
 
         var topFolders = paths.Select(TopFolder).Where(folder => folder is not null).Distinct().ToList();
-        string? gameData = topFolders.FirstOrDefault(folder => folder!.Equals("GameData", StringComparison.OrdinalIgnoreCase));
+        string? gameData = topFolders.FirstOrDefault(folder =>
+            folder!.Equals("GameData", StringComparison.OrdinalIgnoreCase)
+        );
         if (gameData is not null)
         {
             return gameData + "/";
@@ -143,8 +144,11 @@ public sealed class ArchiveCache
         if (singleFolder)
         {
             string outer = topFolders[0]! + "/";
-            var inner = paths.Select(path => TopFolder(path[outer.Length..]))
-                .FirstOrDefault(folder => folder is not null && folder.Equals("GameData", StringComparison.OrdinalIgnoreCase));
+            var inner = paths
+                .Select(path => TopFolder(path[outer.Length..]))
+                .FirstOrDefault(folder =>
+                    folder is not null && folder.Equals("GameData", StringComparison.OrdinalIgnoreCase)
+                );
             if (inner is not null)
             {
                 return outer + inner + "/";

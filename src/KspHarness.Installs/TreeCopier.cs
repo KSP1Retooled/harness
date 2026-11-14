@@ -13,7 +13,18 @@ internal sealed class TreeCopier
 {
     private static readonly HashSet<string> LinkedExtensions = new(StringComparer.OrdinalIgnoreCase)
     {
-        ".assets", ".resS", ".resource", ".bundle", ".dds", ".png", ".mu", ".mbm", ".tga", ".jpg", ".ogg", ".wav",
+        ".assets",
+        ".resS",
+        ".resource",
+        ".bundle",
+        ".dds",
+        ".png",
+        ".mu",
+        ".mbm",
+        ".tga",
+        ".jpg",
+        ".ogg",
+        ".wav",
         ".ksp",
     };
 
@@ -21,14 +32,24 @@ internal sealed class TreeCopier
     // UnityPlayer.so on Linux. A link shares the source's mode, so the Linux player stays executable.
     private static readonly HashSet<string> TopLevelBinaryExtensions = new(StringComparer.OrdinalIgnoreCase)
     {
-        ".dll", ".exe", ".so", ".x86_64",
+        ".dll",
+        ".exe",
+        ".so",
+        ".x86_64",
     };
 
     // The game writes into these: craft thumbnails under Ships/@thumbs and thumbs, save banners, mission files,
     // screenshots and logs.
     private static readonly HashSet<string> WrittenTopFolders = new(StringComparer.OrdinalIgnoreCase)
     {
-        "saves", "Ships", "thumbs", "Missions", "Screenshots", "Logs", "CKAN", ".harness",
+        "saves",
+        "Ships",
+        "thumbs",
+        "Missions",
+        "Screenshots",
+        "Logs",
+        "CKAN",
+        ".harness",
     };
 
     // At any depth. Mods write their data into PluginData. The editor rewrites part icons in Parts/@thumbs (stock ships
@@ -36,7 +57,8 @@ internal sealed class TreeCopier
     // File.WriteAllBytes, which writes into the existing file.
     private static readonly HashSet<string> WrittenFolders = new(StringComparer.OrdinalIgnoreCase)
     {
-        "PluginData", "@thumbs",
+        "PluginData",
+        "@thumbs",
     };
 
     private readonly string dataDirRelative;
@@ -67,8 +89,8 @@ internal sealed class TreeCopier
         // Unity reads its data folder and the DLC asset bundles (which have no extension) and never writes them; the
         // DLC bundles alone are about 450 MB.
         bool unityData = relative.StartsWith(dataDirRelative, StringComparison.OrdinalIgnoreCase);
-        bool assetBundle = segments.Length > 1
-            && segments[^2].Equals("AssetBundles", StringComparison.OrdinalIgnoreCase);
+        bool assetBundle =
+            segments.Length > 1 && segments[^2].Equals("AssetBundles", StringComparison.OrdinalIgnoreCase);
         string extension = Path.GetExtension(relative);
         bool topLevelBinary = segments.Length == 1 && TopLevelBinaryExtensions.Contains(extension);
 
@@ -87,37 +109,46 @@ internal sealed class TreeCopier
         long copiedBytes = 0;
         var options = new ParallelOptions { MaxDegreeOfParallelism = 8, CancellationToken = cancel };
 
-        Parallel.ForEach(files, options, relative =>
-        {
-            string from = Path.Combine(source, relative);
-            string to = Path.Combine(dest, relative);
-
-            if (linksAllowed && IsLinkable(relative))
+        Parallel.ForEach(
+            files,
+            options,
+            relative =>
             {
-                switch (HardLinks.TryCreate(from, to))
-                {
-                    case LinkResult.Linked:
-                        Interlocked.Increment(ref linked);
-                        return;
-                    case LinkResult.FileRefused:
-                        Interlocked.Increment(ref refused);
-                        break;
-                    case LinkResult.VolumeRefused:
-                        linksAllowed = false;
-                        break;
-                }
-            }
+                string from = Path.Combine(source, relative);
+                string to = Path.Combine(dest, relative);
 
-            CopyFile(from, to);
-            Interlocked.Increment(ref copied);
-            Interlocked.Add(ref copiedBytes, new FileInfo(to).Length);
-        });
+                if (linksAllowed && IsLinkable(relative))
+                {
+                    switch (HardLinks.TryCreate(from, to))
+                    {
+                        case LinkResult.Linked:
+                            Interlocked.Increment(ref linked);
+                            return;
+                        case LinkResult.FileRefused:
+                            Interlocked.Increment(ref refused);
+                            break;
+                        case LinkResult.VolumeRefused:
+                            linksAllowed = false;
+                            break;
+                    }
+                }
+
+                CopyFile(from, to);
+                Interlocked.Increment(ref copied);
+                Interlocked.Add(ref copiedBytes, new FileInfo(to).Length);
+            }
+        );
 
         return new CopyStats(linked, copied, copiedBytes, refused);
     }
 
-    private static void Collect(string sourceRoot, string relative, IReadOnlySet<string> excludedTopLevel,
-        string destRoot, List<string> files)
+    private static void Collect(
+        string sourceRoot,
+        string relative,
+        IReadOnlySet<string> excludedTopLevel,
+        string destRoot,
+        List<string> files
+    )
     {
         string sourceDir = relative.Length == 0 ? sourceRoot : Path.Combine(sourceRoot, relative);
         Directory.CreateDirectory(relative.Length == 0 ? destRoot : Path.Combine(destRoot, relative));
@@ -136,7 +167,8 @@ internal sealed class TreeCopier
             if (entry.Attributes.HasFlag(FileAttributes.ReparsePoint))
             {
                 throw new InstallException(
-                    $"{entry.FullName} is a junction or symbolic link; a starting install must hold only plain files");
+                    $"{entry.FullName} is a junction or symbolic link; a starting install must hold only plain files"
+                );
             }
 
             if (entry is DirectoryInfo)

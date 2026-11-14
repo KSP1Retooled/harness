@@ -69,7 +69,8 @@ internal static class ValueDecoder
                 return new TaggedEnum(
                     Member<string>(members, "type"),
                     Member<string>(members, "name"),
-                    enumValue is long whole ? whole : (long?)null);
+                    enumValue is long whole ? whole : (long?)null
+                );
             case "vec":
                 var components = Member<List<object>>(members, "v");
                 var vector = new double[components.Count];

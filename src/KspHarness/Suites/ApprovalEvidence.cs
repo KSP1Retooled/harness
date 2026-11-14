@@ -53,8 +53,13 @@ internal static class ApprovalEvidence
 
     private static void Copy(TestEvidence evidence, string? path)
     {
-        if (path is null || !File.Exists(path) || evidence.Files.Any(file => string.Equals(
-                Path.GetFileName(file), Path.GetFileName(path), StringComparison.OrdinalIgnoreCase)))
+        if (
+            path is null
+            || !File.Exists(path)
+            || evidence.Files.Any(file =>
+                string.Equals(Path.GetFileName(file), Path.GetFileName(path), StringComparison.OrdinalIgnoreCase)
+            )
+        )
         {
             return;
         }

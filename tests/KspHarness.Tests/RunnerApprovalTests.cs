@@ -33,12 +33,15 @@ public sealed class RunnerApprovalTests
         Approve.Screenshot(image.ToPng(), "shot", null, approving);
         image.Pixels[image.Offset(1, 1)] = 255;
         image.Pixels[image.Offset(1, 1) + 3] = 255;
-        var shotFailure = Assert.Throws<ApprovalException>(() => Approve.Screenshot(image.ToPng(), "shot", null, context));
+        var shotFailure = Assert.Throws<ApprovalException>(() =>
+            Approve.Screenshot(image.ToPng(), "shot", null, context)
+        );
 
         // Wrapped the way a test body's failures arrive: one inside another, and several at once.
-        ApprovalEvidence.Collect(evidence, new AggregateException(
-            new InvalidOperationException("outer", textFailure),
-            shotFailure));
+        ApprovalEvidence.Collect(
+            evidence,
+            new AggregateException(new InvalidOperationException("outer", textFailure), shotFailure)
+        );
 
         Assert.Equal(
             [
@@ -48,7 +51,8 @@ public sealed class RunnerApprovalTests
                 "Suite.Test.text.approved.txt",
                 "Suite.Test.text.received.txt",
             ],
-            evidence.Files.Order(StringComparer.Ordinal));
+            evidence.Files.Order(StringComparer.Ordinal)
+        );
         Assert.Equal("second\n", File.ReadAllText(Path.Combine(evidence.Folder, "Suite.Test.text.received.txt")));
     }
 }

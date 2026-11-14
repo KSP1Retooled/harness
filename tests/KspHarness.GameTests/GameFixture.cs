@@ -41,7 +41,10 @@ public abstract class GameFixture : IAsyncLifetime
     {
         get
         {
-            Assert.SkipWhen(game is null && failure is null, $"set {StartVariable} to a starting install to run the game tests");
+            Assert.SkipWhen(
+                game is null && failure is null,
+                $"set {StartVariable} to a starting install to run the game tests"
+            );
             if (failure is not null)
             {
                 throw new InvalidOperationException("the game did not start", failure);
@@ -63,19 +66,24 @@ public abstract class GameFixture : IAsyncLifetime
         try
         {
             var clock = Stopwatch.StartNew();
-            var options = new InstanceBuildOptions { Log = message => TestContext.Current.SendDiagnosticMessage(message) };
+            var options = new InstanceBuildOptions
+            {
+                Log = message => TestContext.Current.SendDiagnosticMessage(message),
+            };
             Instance = await InstanceBuilder.BuildAsync(
                 new GameTestsInstall(),
                 StartingInstall.Open(startRoot),
                 HarnessHome.FromEnvironment(),
                 lockFile: null,
-                options);
+                options
+            );
             BuildTime = clock.Elapsed;
 
             clock.Restart();
             game = await GameSession.LaunchAsync(
                 Instance,
-                new LaunchOptions { PlayerLogPath = Instance.Path(Path.Combine(Instance.HarnessFolder, "player.log")) });
+                new LaunchOptions { PlayerLogPath = Instance.Path(Path.Combine(Instance.HarnessFolder, "player.log")) }
+            );
             ConnectTime = clock.Elapsed;
 
             await game.WaitForMainMenuAsync();

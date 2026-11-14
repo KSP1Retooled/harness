@@ -16,7 +16,12 @@ public sealed class RunContext
     private Action<RunContext> onAborted;
     private int reason;
 
-    internal RunContext(double? gameDeadline, double? realDeadline, HandleRegistry handles, Action<RunContext> onAborted)
+    internal RunContext(
+        double? gameDeadline,
+        double? realDeadline,
+        HandleRegistry handles,
+        Action<RunContext> onAborted
+    )
     {
         GameDeadline = gameDeadline;
         RealDeadline = realDeadline;
@@ -51,11 +56,21 @@ public sealed class RunContext
         switch (Reason)
         {
             case AbortReason.TimedOutGame:
-                throw new TimeoutException(string.Format(
-                    CultureInfo.InvariantCulture, "The run passed its game-time deadline ({0:0.###} s)", GameDeadline));
+                throw new TimeoutException(
+                    string.Format(
+                        CultureInfo.InvariantCulture,
+                        "The run passed its game-time deadline ({0:0.###} s)",
+                        GameDeadline
+                    )
+                );
             case AbortReason.TimedOutReal:
-                throw new TimeoutException(string.Format(
-                    CultureInfo.InvariantCulture, "The run passed its real-time deadline ({0:0.###} s)", RealDeadline));
+                throw new TimeoutException(
+                    string.Format(
+                        CultureInfo.InvariantCulture,
+                        "The run passed its real-time deadline ({0:0.###} s)",
+                        RealDeadline
+                    )
+                );
             default:
                 throw new OperationCanceledException("The run was cancelled", cancellation.Token);
         }

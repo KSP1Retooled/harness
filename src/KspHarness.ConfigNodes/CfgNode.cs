@@ -10,9 +10,7 @@ namespace KspHarness.ConfigNodes;
 public sealed class CfgNode
 {
     public CfgNode()
-        : this(string.Empty)
-    {
-    }
+        : this(string.Empty) { }
 
     public CfgNode(string name)
     {

@@ -61,7 +61,8 @@ public sealed class ArchiveCacheTests
         var cache = new ArchiveCache(dir.Combine("cache"));
 
         await Assert.ThrowsAsync<InstallException>(() =>
-            cache.GetAsync(new Uri(zip).AbsoluteUri, new string('0', 64), TestContext.Current.CancellationToken));
+            cache.GetAsync(new Uri(zip).AbsoluteUri, new string('0', 64), TestContext.Current.CancellationToken)
+        );
         Assert.Empty(Directory.GetFiles(dir.Combine("cache")));
     }
 
@@ -90,8 +91,15 @@ public sealed class ArchiveCacheTests
         string sha = await ArchiveCache.HashFileAsync(zip, TestContext.Current.CancellationToken);
         string url = new Uri(zip).AbsoluteUri;
 
-        var paths = await Task.WhenAll(Enumerable.Range(0, 8).Select(_ => Task.Run(() =>
-            new ArchiveCache(dir.Combine("cache")).GetAsync(url, sha, TestContext.Current.CancellationToken))));
+        var paths = await Task.WhenAll(
+            Enumerable
+                .Range(0, 8)
+                .Select(_ =>
+                    Task.Run(() =>
+                        new ArchiveCache(dir.Combine("cache")).GetAsync(url, sha, TestContext.Current.CancellationToken)
+                    )
+                )
+        );
 
         Assert.All(paths, path => Assert.Equal(sha, Path.GetFileName(path)));
         Assert.Single(Directory.GetFiles(dir.Combine("cache")));

@@ -36,9 +36,12 @@ public sealed partial class InstallBuilder
     public InstallBuilder AnswerPopup(string popup, string answer)
     {
         var known = KnownPopups.Get(popup);
-        var match = known.Answers.FirstOrDefault(a => string.Equals(a, answer, StringComparison.OrdinalIgnoreCase))
+        var match =
+            known.Answers.FirstOrDefault(a => string.Equals(a, answer, StringComparison.OrdinalIgnoreCase))
             ?? throw new ArgumentException(
-                $"{known.Id} takes the answers {string.Join(", ", known.Answers)}, not '{answer}'", nameof(answer));
+                $"{known.Id} takes the answers {string.Join(", ", known.Answers)}, not '{answer}'",
+                nameof(answer)
+            );
         Popups.Answers[known.Id] = match;
         return this;
     }
@@ -106,7 +109,8 @@ public sealed class PopupSettings
         IReadOnlyDictionary<string, string?> knownAnswers,
         IReadOnlyList<DialogAnswer> dialogs,
         IReadOnlyList<string> closeButtons,
-        IReadOnlyList<WindowCloser> closers)
+        IReadOnlyList<WindowCloser> closers
+    )
     {
         KnownAnswers = knownAnswers;
         Dialogs = dialogs;
@@ -125,9 +129,14 @@ public sealed class PopupSettings
     public IReadOnlyList<WindowCloser> Closers { get; }
 
     /// <summary>Goes into the instance hash: the files the builder writes follow from it.</summary>
-    internal string Fingerprint => $"popups v{KnownPopups.Version} "
-        + string.Join(" ", KnownAnswers.OrderBy(pair => pair.Key, StringComparer.Ordinal)
-            .Select(pair => $"{pair.Key}={pair.Value ?? "-"}"));
+    internal string Fingerprint =>
+        $"popups v{KnownPopups.Version} "
+        + string.Join(
+            " ",
+            KnownAnswers
+                .OrderBy(pair => pair.Key, StringComparer.Ordinal)
+                .Select(pair => $"{pair.Key}={pair.Value ?? "-"}")
+        );
 
     internal static PopupSettings Merge(PopupSettings? included, PopupChoices own)
     {
@@ -136,18 +145,21 @@ public sealed class PopupSettings
         {
             string? inherited = included is null ? popup.DefaultAnswer : included.KnownAnswers[popup.Id];
             // An explicit answer always counts, even in a definition that turns the rest off.
-            known[popup.Id] = own.Answers.GetValueOrDefault(popup.Id) ?? own.AnswerKnown switch
-            {
-                false => null,
-                true => inherited ?? popup.DefaultAnswer,
-                null => inherited,
-            };
+            known[popup.Id] =
+                own.Answers.GetValueOrDefault(popup.Id)
+                ?? own.AnswerKnown switch
+                {
+                    false => null,
+                    true => inherited ?? popup.DefaultAnswer,
+                    null => inherited,
+                };
         }
 
         return new PopupSettings(
             known,
             [.. own.Dialogs, .. included?.Dialogs ?? []],
             [.. own.CloseButtons, .. included?.CloseButtons ?? []],
-            [.. own.Closers, .. included?.Closers ?? []]);
+            [.. own.Closers, .. included?.Closers ?? []]
+        );
     }
 }

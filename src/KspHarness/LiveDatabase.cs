@@ -40,6 +40,7 @@ public sealed class LiveDatabase
             RunOptions.Default,
             cancellationToken,
             snippet.File,
-            snippet.Line);
+            snippet.Line
+        );
     }
 }

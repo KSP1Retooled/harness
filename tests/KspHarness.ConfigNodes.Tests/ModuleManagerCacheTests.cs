@@ -5,8 +5,9 @@ namespace KspHarness.ConfigNodes.Tests;
 /// <summary>Reads a real ModuleManager.ConfigCache (KSPHARNESS_TEST_MM_CACHE) without changing it.</summary>
 public class ModuleManagerCacheTests
 {
-    private static readonly Lazy<ConfigDatabase> Database =
-        new(() => ConfigDatabase.LoadModuleManagerCache(TestData.ModuleManagerCache));
+    private static readonly Lazy<ConfigDatabase> Database = new(() =>
+        ConfigDatabase.LoadModuleManagerCache(TestData.ModuleManagerCache)
+    );
 
     [FactWithData(TestData.ModuleManagerCacheVariable)]
     public void Loads_every_url_config_with_its_file()
@@ -43,10 +44,20 @@ public class ModuleManagerCacheTests
         var expectedModules = database.Nodes.SelectMany(Descendants).Where(IsEngineModule).ToList();
         Assert.NotEmpty(engineModules);
         Assert.Equal(expectedModules, engineModules);
-        var expectedParts = database.Nodes
-            .Where(node => node.Name == "PART")
-            .Where(part => part.GetNodes("MODULE").Any(module => IsEngineModule(module)
-                && module.GetValues("maxThrust").Any(text => double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out var thrust) && thrust > 100)))
+        var expectedParts = database
+            .Nodes.Where(node => node.Name == "PART")
+            .Where(part =>
+                part.GetNodes("MODULE")
+                    .Any(module =>
+                        IsEngineModule(module)
+                        && module
+                            .GetValues("maxThrust")
+                            .Any(text =>
+                                double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out var thrust)
+                                && thrust > 100
+                            )
+                    )
+            )
             .ToList();
         Assert.NotEmpty(bigEngineParts);
         Assert.Equal(expectedParts, bigEngineParts);

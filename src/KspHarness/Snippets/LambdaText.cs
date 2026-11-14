@@ -13,10 +13,16 @@ internal static class LambdaText
     public static string ParameterlessLambda(string text, SourcePosition position)
     {
         var lambda = ParseLambda(text, position);
-        if (lambda is not ParenthesizedLambdaExpressionSyntax { ParameterList.Parameters.Count: 0 }
-            && lambda is not AnonymousMethodExpressionSyntax { ParameterList: null or { Parameters.Count: 0 } })
+        if (
+            lambda is not ParenthesizedLambdaExpressionSyntax { ParameterList.Parameters.Count: 0 }
+            && lambda is not AnonymousMethodExpressionSyntax { ParameterList: null or { Parameters.Count: 0 } }
+        )
         {
-            throw new SnippetCompileException("Game.Run takes a lambda with no parameters here", position.File, position.Line);
+            throw new SnippetCompileException(
+                "Game.Run takes a lambda with no parameters here",
+                position.File,
+                position.Line
+            );
         }
 
         return text;
@@ -52,7 +58,8 @@ internal static class LambdaText
                 throw new SnippetCompileException(
                     "Game.Run takes a lambda with one parameter here, such as ksp => ksp.FlightGlobals.ActiveVessel",
                     position.File,
-                    position.Line);
+                    position.Line
+                );
         }
 
         var rewriter = new ParameterRemover(parameter.ValueText);
@@ -62,9 +69,10 @@ internal static class LambdaText
             var line = position.Line + use.GetLocation().GetLineSpan().StartLinePosition.Line;
             throw new SnippetCompileException(
                 $"'{parameter.ValueText}' stands for the game's namespace and can only be followed by a member, as in "
-                + $"{parameter.ValueText}.FlightGlobals; '{use.Parent}' uses it another way",
+                    + $"{parameter.ValueText}.FlightGlobals; '{use.Parent}' uses it another way",
                 position.File,
-                line);
+                line
+            );
         }
 
         var prefix = asyncKeyword.IsKind(SyntaxKind.AsyncKeyword) ? "async () =>" : "() =>";
@@ -105,7 +113,8 @@ internal static class LambdaText
             throw new SnippetCompileException(
                 $"Game.Run needs a lambda written at the call, so that its source can be sent; got '{text}'",
                 position.File,
-                position.Line);
+                position.Line
+            );
         }
 
         return lambda;

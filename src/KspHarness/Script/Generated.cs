@@ -33,9 +33,7 @@ public static class Handles
 /// <summary>The running snippet's cancellation and deadlines.</summary>
 public sealed class RunContext
 {
-    private RunContext()
-    {
-    }
+    private RunContext() { }
 
     public static RunContext Current => throw OutsideGame.Error();
 

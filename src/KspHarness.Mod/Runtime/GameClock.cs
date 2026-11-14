@@ -20,6 +20,7 @@ internal static class GameClock
     private static bool hadUniversalTime;
     private static Game lastGame;
     private static bool wasLoading;
+
     // Boxed so that other threads never see a torn Nullable<double>
     private static object universalTime;
     private static int frame;

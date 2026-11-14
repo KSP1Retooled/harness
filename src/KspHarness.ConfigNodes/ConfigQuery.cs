@@ -68,7 +68,10 @@ public sealed class ConfigQuery
     /// <summary>Values selected starting from <paramref name="context"/>: the last segment is a key.</summary>
     public List<ConfigValue<TNode>> SelectValues<TNode>(TNode context, INodeAdapter<TNode> adapter)
     {
-        var owners = segments.Count == 1 ? new List<TNode> { context } : Evaluate(Children(context, adapter), segments.Count - 1, adapter);
+        var owners =
+            segments.Count == 1
+                ? new List<TNode> { context }
+                : Evaluate(Children(context, adapter), segments.Count - 1, adapter);
         return CollectValues(owners, adapter);
     }
 
@@ -101,7 +104,13 @@ public sealed class ConfigQuery
         return current;
     }
 
-    private static void Collect<TNode>(List<TNode> siblings, Segment segment, INodeAdapter<TNode> adapter, List<TNode> output, HashSet<TNode> seen)
+    private static void Collect<TNode>(
+        List<TNode> siblings,
+        Segment segment,
+        INodeAdapter<TNode> adapter,
+        List<TNode> output,
+        HashSet<TNode> seen
+    )
     {
         var matches = new List<int>();
         for (var i = 0; i < siblings.Count; i++)
@@ -138,7 +147,13 @@ public sealed class ConfigQuery
         return result;
     }
 
-    private static void CollectValues<TNode>(TNode node, Segment segment, INodeAdapter<TNode> adapter, List<ConfigValue<TNode>> output, HashSet<TNode> seen)
+    private static void CollectValues<TNode>(
+        TNode node,
+        Segment segment,
+        INodeAdapter<TNode> adapter,
+        List<ConfigValue<TNode>> output,
+        HashSet<TNode> seen
+    )
     {
         if (seen.Add(node))
         {
@@ -151,7 +166,14 @@ public sealed class ConfigQuery
             }
 
             foreach (var index in segment.Pick(matches))
-                output.Add(new ConfigValue<TNode>(node, index, adapter.GetValueKey(node, index), adapter.GetValueText(node, index)));
+                output.Add(
+                    new ConfigValue<TNode>(
+                        node,
+                        index,
+                        adapter.GetValueKey(node, index),
+                        adapter.GetValueText(node, index)
+                    )
+                );
         }
 
         if (!segment.Deep)
@@ -277,7 +299,9 @@ public sealed class ConfigQuery
                 var index = rest.Substring(1).Trim();
                 if (index != "*")
                 {
-                    if (!int.TryParse(index, NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out var value))
+                    if (
+                        !int.TryParse(index, NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out var value)
+                    )
                         throw new FormatException($"bad index '{index}' in '{query}'");
 
                     segment.Index = value;
@@ -441,7 +465,11 @@ public sealed class ConfigQuery
             for (var i = 0; i < count; i++)
             {
                 var child = adapter.GetNode(node, i);
-                if (Wildcard.IsMatch(Type, adapter.GetName(child)) && NameMatches(names, child, adapter) && AllMet(Then, child, adapter))
+                if (
+                    Wildcard.IsMatch(Type, adapter.GetName(child))
+                    && NameMatches(names, child, adapter)
+                    && AllMet(Then, child, adapter)
+                )
                     return true;
             }
 
@@ -464,8 +492,12 @@ public sealed class ConfigQuery
         {
             var compare = 0;
             var limit = 0.0;
-            if (Name != null && Name.Length > 1 && (Name[0] == '<' || Name[0] == '>')
-                && double.TryParse(Name.Substring(1), NumberStyles.Float, CultureInfo.InvariantCulture, out limit))
+            if (
+                Name != null
+                && Name.Length > 1
+                && (Name[0] == '<' || Name[0] == '>')
+                && double.TryParse(Name.Substring(1), NumberStyles.Float, CultureInfo.InvariantCulture, out limit)
+            )
             {
                 compare = Name[0] == '<' ? -1 : 1;
             }
@@ -479,8 +511,10 @@ public sealed class ConfigQuery
                 var text = adapter.GetValueText(node, i);
                 if (compare != 0)
                 {
-                    if (double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out var number)
-                        && (compare < 0 ? number < limit : number > limit))
+                    if (
+                        double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out var number)
+                        && (compare < 0 ? number < limit : number > limit)
+                    )
                     {
                         return true;
                     }

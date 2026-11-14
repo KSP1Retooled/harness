@@ -17,7 +17,13 @@ internal static class Png
     // Adam7 passes: x start, y start, x step, y step.
     private static readonly (int X, int Y, int Dx, int Dy)[] Adam7 =
     [
-        (0, 0, 8, 8), (4, 0, 8, 8), (0, 4, 4, 8), (2, 0, 4, 4), (0, 2, 2, 4), (1, 0, 2, 2), (0, 1, 1, 2),
+        (0, 0, 8, 8),
+        (4, 0, 8, 8),
+        (0, 4, 4, 8),
+        (2, 0, 4, 4),
+        (0, 2, 2, 4),
+        (1, 0, 2, 2),
+        (0, 1, 1, 2),
     ];
 
     public static RgbaImage Decode(byte[] data)
@@ -155,14 +161,15 @@ internal static class Png
 
     private readonly record struct Header(int Width, int Height, int BitDepth, int ColorType, bool Interlaced)
     {
-        public int Channels => ColorType switch
-        {
-            0 => 1,
-            2 => 3,
-            3 => 1,
-            4 => 2,
-            _ => 4,
-        };
+        public int Channels =>
+            ColorType switch
+            {
+                0 => 1,
+                2 => 3,
+                3 => 1,
+                4 => 2,
+                _ => 4,
+            };
 
         public int BitsPerPixel => Channels * BitDepth;
     }
@@ -179,7 +186,8 @@ internal static class Png
             BinaryPrimitives.ReadInt32BigEndian(body[4..]),
             body[8],
             body[9],
-            body[12] == 1);
+            body[12] == 1
+        );
 
         var depthValid = header.ColorType switch
         {
@@ -191,14 +199,22 @@ internal static class Png
         if (!depthValid || header.Width <= 0 || header.Height <= 0)
         {
             throw new InvalidDataException(
-                $"unsupported PNG: {header.Width}x{header.Height}, colour type {header.ColorType}, depth {header.BitDepth}");
+                $"unsupported PNG: {header.Width}x{header.Height}, colour type {header.ColorType}, depth {header.BitDepth}"
+            );
         }
 
         return header;
     }
 
-    private static int DecodePass(byte[] raw, int offset, int width, int height, PixelReader reader, RgbaImage image,
-        (int X, int Y, int Dx, int Dy) pass)
+    private static int DecodePass(
+        byte[] raw,
+        int offset,
+        int width,
+        int height,
+        PixelReader reader,
+        RgbaImage image,
+        (int X, int Y, int Dx, int Dy) pass
+    )
     {
         var bitsPerPixel = reader.Header.BitsPerPixel;
         var stride = (width * bitsPerPixel + 7) / 8;
@@ -318,7 +334,9 @@ internal static class Png
                     var index = Sample(row, x, 0);
                     if (index * 3 + 2 >= palette!.Length)
                     {
-                        throw new InvalidDataException($"the PNG uses palette entry {index}, past the end of its palette");
+                        throw new InvalidDataException(
+                            $"the PNG uses palette entry {index}, past the end of its palette"
+                        );
                     }
 
                     rgba[0] = palette[index * 3];

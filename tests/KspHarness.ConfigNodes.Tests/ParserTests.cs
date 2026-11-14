@@ -119,7 +119,9 @@ public class ParserTests
     [Fact]
     public void Reads_a_root_with_values_and_nodes_like_a_craft_file()
     {
-        var root = ConfigParser.Parse("ship = Test\nversion = 1.12.5\nPART\n{\n part = mk1pod.v2_4294\n}\nPART\n{\n part = fuelTank_123\n}\n");
+        var root = ConfigParser.Parse(
+            "ship = Test\nversion = 1.12.5\nPART\n{\n part = mk1pod.v2_4294\n}\nPART\n{\n part = fuelTank_123\n}\n"
+        );
 
         Assert.Equal(ConfigParser.RootName, root.Name);
         Assert.Equal("Test", root.GetValue("ship"));

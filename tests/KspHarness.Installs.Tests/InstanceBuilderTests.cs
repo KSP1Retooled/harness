@@ -40,14 +40,30 @@ public sealed class InstanceBuilderTests
         Assert.Equal("1.25", SettingsFile.ReadTopLevel(instance.Path("settings.cfg"))["UI_SCALE"]);
 
         // Large read-only files are links; files the game writes are copies.
-        Assert.True(FileIdentity.SameFile(Path.Combine(start.Root, "GameData/Squad/Parts/texture.dds"),
-            instance.Path("GameData/Squad/Parts/texture.dds")));
-        Assert.True(FileIdentity.SameFile(Path.Combine(start.Root, "KSP_x64_Data/Managed/Assembly-CSharp.dll"),
-            instance.Path("KSP_x64_Data/Managed/Assembly-CSharp.dll")));
-        Assert.False(FileIdentity.SameFile(Path.Combine(start.Root, "Ships/@thumbs/VAB/craft.png"),
-            instance.Path("Ships/@thumbs/VAB/craft.png")));
-        Assert.False(FileIdentity.SameFile(Path.Combine(start.Root, "GameData/Squad/Plugins/Squad.dll"),
-            instance.Path("GameData/Squad/Plugins/Squad.dll")));
+        Assert.True(
+            FileIdentity.SameFile(
+                Path.Combine(start.Root, "GameData/Squad/Parts/texture.dds"),
+                instance.Path("GameData/Squad/Parts/texture.dds")
+            )
+        );
+        Assert.True(
+            FileIdentity.SameFile(
+                Path.Combine(start.Root, "KSP_x64_Data/Managed/Assembly-CSharp.dll"),
+                instance.Path("KSP_x64_Data/Managed/Assembly-CSharp.dll")
+            )
+        );
+        Assert.False(
+            FileIdentity.SameFile(
+                Path.Combine(start.Root, "Ships/@thumbs/VAB/craft.png"),
+                instance.Path("Ships/@thumbs/VAB/craft.png")
+            )
+        );
+        Assert.False(
+            FileIdentity.SameFile(
+                Path.Combine(start.Root, "GameData/Squad/Plugins/Squad.dll"),
+                instance.Path("GameData/Squad/Plugins/Squad.dll")
+            )
+        );
         Assert.False(File.Exists(Path.Combine(start.Root, "settings.cfg")));
 
         var lockFile = LockFile.Load(lockPath)!;
@@ -75,8 +91,12 @@ public sealed class InstanceBuilderTests
         Assert.Equal(baseInstance.Hash, derived.Record.Parent);
         Assert.Equal("GAME {}", File.ReadAllText(derived.Path("saves/MySave/persistent.sfs")));
         Assert.Equal("1.25", SettingsFile.ReadTopLevel(derived.Path("settings.cfg"))["UI_SCALE"]);
-        Assert.True(FileIdentity.SameFile(baseInstance.Path("GameData/Squad/Parts/texture.dds"),
-            derived.Path("GameData/Squad/Parts/texture.dds")));
+        Assert.True(
+            FileIdentity.SameFile(
+                baseInstance.Path("GameData/Squad/Parts/texture.dds"),
+                derived.Path("GameData/Squad/Parts/texture.dds")
+            )
+        );
         Assert.False(File.Exists(derived.Path(".harness/ckan.log")));
 
         dir.Write("MySave/persistent.sfs", "GAME { changed }");
@@ -111,11 +131,21 @@ public sealed class InstanceBuilderTests
         var start = StartingInstall.Open(FakeInstall.Create(dir));
         var home = new HarnessHome(dir.Combine("home"));
 
-        var instance = await InstanceBuilder.BuildAsync(new WithSettings(), start, home, null,
-            new InstanceBuildOptions { UseHardLinks = false }, Cancel);
+        var instance = await InstanceBuilder.BuildAsync(
+            new WithSettings(),
+            start,
+            home,
+            null,
+            new InstanceBuildOptions { UseHardLinks = false },
+            Cancel
+        );
 
-        Assert.False(FileIdentity.SameFile(Path.Combine(start.Root, "GameData/Squad/Parts/texture.dds"),
-            instance.Path("GameData/Squad/Parts/texture.dds")));
+        Assert.False(
+            FileIdentity.SameFile(
+                Path.Combine(start.Root, "GameData/Squad/Parts/texture.dds"),
+                instance.Path("GameData/Squad/Parts/texture.dds")
+            )
+        );
     }
 
     [Fact]
@@ -128,14 +158,16 @@ public sealed class InstanceBuilderTests
         var frozen = new InstanceBuildOptions { LockMode = LockMode.Frozen };
 
         await Assert.ThrowsAsync<InstallException>(() =>
-            InstanceBuilder.BuildAsync(new WithSettings(), start, home, lockPath, frozen, Cancel));
+            InstanceBuilder.BuildAsync(new WithSettings(), start, home, lockPath, frozen, Cancel)
+        );
 
         await InstanceBuilder.BuildAsync(new WithSettings(), start, home, lockPath, cancel: Cancel);
         await InstanceBuilder.BuildAsync(new WithSettings(), start, home, lockPath, frozen, Cancel);
 
         var retooled = StartingInstall.Open(FakeInstall.Create(dir, "retooled", retooled: true));
         var error = await Assert.ThrowsAsync<InstallException>(() =>
-            InstanceBuilder.BuildAsync(new WithSettings(), retooled, home, lockPath, frozen, Cancel));
+            InstanceBuilder.BuildAsync(new WithSettings(), retooled, home, lockPath, frozen, Cancel)
+        );
         Assert.Contains("stock", error.Message);
     }
 
@@ -253,8 +285,14 @@ public sealed class InstanceBuilderTests
         Assert.True(instance.DeployMod(mod));
 
         dir.Write("build/GameData/KspHarness/Plugins/KspHarness.Mod.dll", "v2");
-        using (File.Open(instance.Path("GameData/KspHarness/Plugins/KspHarness.Mod.dll"), FileMode.Open,
-            FileAccess.Read, FileShare.Read))
+        using (
+            File.Open(
+                instance.Path("GameData/KspHarness/Plugins/KspHarness.Mod.dll"),
+                FileMode.Open,
+                FileAccess.Read,
+                FileShare.Read
+            )
+        )
         {
             Assert.Throws<InstallException>(() => instance.DeployMod(mod));
         }
@@ -311,7 +349,12 @@ public sealed class InstanceBuilderTests
     [InlineData("/opt/ckan/CKAN.EXE", false, "mono", "/opt/ckan/CKAN.EXE")]
     [InlineData("/usr/bin/ckan", false, "/usr/bin/ckan", null)]
     [InlineData(@"C:\CKAN\ckan.exe", true, @"C:\CKAN\ckan.exe", null)]
-    public void Ckan_exe_runs_under_mono_outside_windows(string executable, bool windows, string fileName, string? prefix)
+    public void Ckan_exe_runs_under_mono_outside_windows(
+        string executable,
+        bool windows,
+        string fileName,
+        string? prefix
+    )
     {
         var command = CkanClient.CommandFor(executable, windows);
 
@@ -346,10 +389,18 @@ public sealed class InstanceBuilderTests
         Assert.Equal("1.25", SettingsFile.ReadTopLevel(derived.Path("settings.cfg"))["UI_SCALE"]);
         Assert.False(Directory.Exists(derived.Path("saves/played")));
         Assert.False(File.Exists(derived.Path("KSP.log")));
-        Assert.True(FileIdentity.SameFile(Path.Combine(start.Root, "GameData/Squad/Parts/texture.dds"),
-            derived.Path("GameData/Squad/Parts/texture.dds")));
-        Assert.False(FileIdentity.SameFile(Path.Combine(start.Root, "GameData/Squad/Parts/@thumbs/pod_icon.png"),
-            derived.Path("GameData/Squad/Parts/@thumbs/pod_icon.png")));
+        Assert.True(
+            FileIdentity.SameFile(
+                Path.Combine(start.Root, "GameData/Squad/Parts/texture.dds"),
+                derived.Path("GameData/Squad/Parts/texture.dds")
+            )
+        );
+        Assert.False(
+            FileIdentity.SameFile(
+                Path.Combine(start.Root, "GameData/Squad/Parts/@thumbs/pod_icon.png"),
+                derived.Path("GameData/Squad/Parts/@thumbs/pod_icon.png")
+            )
+        );
     }
 
     [Fact]
@@ -365,8 +416,9 @@ public sealed class InstanceBuilderTests
 
         dir.Write("broken/file.txt", "x");
         dir.Write("building/b/file.txt", "x");
-        Assert.Throws<InstallException>(() => InstanceBuilder.MoveIntoPlace(dir.Combine("building", "b"),
-            dir.Combine("broken")));
+        Assert.Throws<InstallException>(() =>
+            InstanceBuilder.MoveIntoPlace(dir.Combine("building", "b"), dir.Combine("broken"))
+        );
 
         Assert.True(InstanceBuilder.MoveIntoPlace(dir.Combine("building", "b"), dir.Combine("instances", "Plain-x")));
     }
@@ -377,7 +429,10 @@ public sealed class InstanceBuilderTests
         using var dir = new TempDir();
         var home = new HarnessHome(dir.Combine("home"));
         dir.Write("home/instances/.building/Dead-1/file.txt", "x");
-        dir.Write("home/instances/.building/Dead-1.owner", BuildOwner.Describe(Environment.ProcessId, DateTime.UnixEpoch));
+        dir.Write(
+            "home/instances/.building/Dead-1.owner",
+            BuildOwner.Describe(Environment.ProcessId, DateTime.UnixEpoch)
+        );
         dir.Write("home/instances/.building/Live-2/file.txt", "x");
         dir.Write("home/instances/.building/Live-2.owner", BuildOwner.Current());
         dir.Write("home/instances/.building/Unowned-3/file.txt", "x");
@@ -397,12 +452,19 @@ public sealed class InstanceBuilderTests
 
         InstanceBuilder.RequireLockedModules("D", locked, [new("Foo", "1.0"), new("ModuleManager", "4.2.3")], "log");
 
-        var extra = Assert.Throws<InstallException>(() => InstanceBuilder.RequireLockedModules("D", locked,
-            [new("ModuleManager", "4.2.3"), new("Foo", "1.0"), new("Bar", "2.0")], "log"));
+        var extra = Assert.Throws<InstallException>(() =>
+            InstanceBuilder.RequireLockedModules(
+                "D",
+                locked,
+                [new("ModuleManager", "4.2.3"), new("Foo", "1.0"), new("Bar", "2.0")],
+                "log"
+            )
+        );
         Assert.Contains("Bar=2.0", extra.Message);
 
-        var absent = Assert.Throws<InstallException>(() => InstanceBuilder.RequireLockedModules("D", locked,
-            [new("Foo", "1.0")], "log"));
+        var absent = Assert.Throws<InstallException>(() =>
+            InstanceBuilder.RequireLockedModules("D", locked, [new("Foo", "1.0")], "log")
+        );
         Assert.Contains("ModuleManager=4.2.3", absent.Message);
     }
 
@@ -417,13 +479,15 @@ public sealed class InstanceBuilderTests
         // A junction needs no privilege on Windows, where a symbolic link does; elsewhere a symbolic link.
         if (OperatingSystem.IsWindows())
         {
-            var mklink = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("cmd.exe")
-            {
-                ArgumentList = { "/c", "mklink", "/J", junction, dir.Combine("checkout") },
-                UseShellExecute = false,
-                CreateNoWindow = true,
-                RedirectStandardOutput = true,
-            })!;
+            var mklink = System.Diagnostics.Process.Start(
+                new System.Diagnostics.ProcessStartInfo("cmd.exe")
+                {
+                    ArgumentList = { "/c", "mklink", "/J", junction, dir.Combine("checkout") },
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    RedirectStandardOutput = true,
+                }
+            )!;
             mklink.WaitForExit();
             Assert.Equal(0, mklink.ExitCode);
         }
@@ -434,8 +498,14 @@ public sealed class InstanceBuilderTests
 
         try
         {
-            var error = Assert.Throws<InstallException>(() => new TreeCopier("KSP_x64_Data", allowLinks: true)
-                .Copy(startRoot, dir.Combine("copy"), new HashSet<string>(), Cancel));
+            var error = Assert.Throws<InstallException>(() =>
+                new TreeCopier("KSP_x64_Data", allowLinks: true).Copy(
+                    startRoot,
+                    dir.Combine("copy"),
+                    new HashSet<string>(),
+                    Cancel
+                )
+            );
             Assert.Contains("junction", error.Message);
             Assert.True(File.Exists(dir.Combine("checkout/Plugins/Mod.dll")));
         }

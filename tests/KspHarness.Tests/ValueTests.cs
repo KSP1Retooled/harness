@@ -73,7 +73,10 @@ public sealed class ValueTests
         Assert.Equal(Scene.Flight, Decode(json, typeof(Scene)));
         Assert.Equal("Flight", Decode(json, typeof(string)));
         Assert.Equal(7, Decode(json, typeof(int)));
-        Assert.Equal(Layers.A | Layers.B, Decode("""{"$":"enum","type":"L","name":"A, B","value":3}""", typeof(Layers)));
+        Assert.Equal(
+            Layers.A | Layers.B,
+            Decode("""{"$":"enum","type":"L","name":"A, B","value":3}""", typeof(Layers))
+        );
     }
 
     [Fact]
@@ -103,7 +106,12 @@ public sealed class ValueTests
     [Fact]
     public void Vectors_encode_by_component()
     {
-        var vector = new Vector3 { x = 1, y = 2, z = 3 };
+        var vector = new Vector3
+        {
+            x = 1,
+            y = 2,
+            z = 3,
+        };
 
         Assert.Equal("""{"$":"vec","type":"Vector3","v":[1,2,3]}""", ValueEncoder.Encode(vector)!.ToJsonString());
     }
@@ -115,13 +123,19 @@ public sealed class ValueTests
 
         Assert.Equal(new Orbit(80000, 75000.5, "Kerbin"), Decode(json, typeof(Orbit)));
 
-        var settable = (Settable)Decode("""{"$":"obj","type":"x","fields":{"count":3,"name":"n"}}""", typeof(Settable))!;
+        var settable = (Settable)
+            Decode("""{"$":"obj","type":"x","fields":{"count":3,"name":"n"}}""", typeof(Settable))!;
         Assert.Equal((3, "n"), (settable.Count, settable.Name));
 
-        var tuple = Decode("""{"$":"obj","type":"System.ValueTuple`2","fields":{"Item1":1,"Item2":"b"}}""", typeof((int, string)));
+        var tuple = Decode(
+            """{"$":"obj","type":"System.ValueTuple`2","fields":{"Item1":1,"Item2":"b"}}""",
+            typeof((int, string))
+        );
         Assert.Equal((1, "b"), tuple);
 
-        var dictionary = (Dictionary<string, double>)Decode("""{"$":"obj","type":"x","fields":{"a":1,"b":2.5}}""", typeof(Dictionary<string, double>))!;
+        var dictionary =
+            (Dictionary<string, double>)
+                Decode("""{"$":"obj","type":"x","fields":{"a":1,"b":2.5}}""", typeof(Dictionary<string, double>))!;
         Assert.Equal(2.5, dictionary["b"]);
     }
 
@@ -139,10 +153,16 @@ public sealed class ValueTests
         Assert.Equal(GameTime.Seconds(12.5), Decode("""{"$":"gametime","seconds":12.5}""", typeof(GameTime)));
         Assert.Equal([1, 2, 3], (byte[])Decode("""{"$":"bytes","v":"AQID"}""", typeof(byte[]))!);
 
-        var handle = (Handle)Decode("""{"$":"handle","id":4,"type":"Vessel","assembly":"Assembly-CSharp","text":"X"}""", typeof(Handle))!;
+        var handle = (Handle)
+            Decode(
+                """{"$":"handle","id":4,"type":"Vessel","assembly":"Assembly-CSharp","text":"X"}""",
+                typeof(Handle)
+            )!;
         Assert.Equal((4L, "Vessel"), (handle.Id, handle.Type));
 
-        var error = Assert.Throws<InvalidCastException>(() => Decode("""{"$":"handle","id":4,"type":"Vessel"}""", typeof(double)));
+        var error = Assert.Throws<InvalidCastException>(() =>
+            Decode("""{"$":"handle","id":4,"type":"Vessel"}""", typeof(double))
+        );
         Assert.Contains("Handle", error.Message);
     }
 

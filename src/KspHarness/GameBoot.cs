@@ -9,9 +9,7 @@ namespace KspHarness;
 public sealed class GameBootException : Exception
 {
     public GameBootException(string message)
-        : base(message)
-    {
-    }
+        : base(message) { }
 }
 
 /// <summary>
@@ -194,7 +192,12 @@ internal sealed class ModLoadCheck
             return;
         }
 
-        using var stream = new FileStream(path!, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+        using var stream = new FileStream(
+            path!,
+            FileMode.Open,
+            FileAccess.Read,
+            FileShare.ReadWrite | FileShare.Delete
+        );
         if (stream.Length < position)
         {
             // Unity truncates the log when it starts, so an older game's log may have been read first.
@@ -207,7 +210,12 @@ internal sealed class ModLoadCheck
         }
 
         stream.Position = position;
-        using var reader = new StreamReader(stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: false, leaveOpen: true);
+        using var reader = new StreamReader(
+            stream,
+            Encoding.UTF8,
+            detectEncodingFromByteOrderMarks: false,
+            leaveOpen: true
+        );
         var text = reader.ReadToEnd();
         position = stream.Position;
 
@@ -244,8 +252,10 @@ internal sealed class ModLoadCheck
             return;
         }
 
-        if (line.StartsWith("[KspHarness] Not started", StringComparison.Ordinal)
-            || line.StartsWith("[KspHarness] Cannot listen", StringComparison.Ordinal))
+        if (
+            line.StartsWith("[KspHarness] Not started", StringComparison.Ordinal)
+            || line.StartsWith("[KspHarness] Cannot listen", StringComparison.Ordinal)
+        )
         {
             failure = $"the driver mod did not start: {line.Trim()}";
         }
@@ -267,7 +277,8 @@ internal sealed class ModLoadCheck
             listChecked = true;
             if (!modListed)
             {
-                failure = "the game loaded without the driver mod: KSP's list of mod DLLs has no KspHarness.Mod, so "
+                failure =
+                    "the game loaded without the driver mod: KSP's list of mod DLLs has no KspHarness.Mod, so "
                     + "GameData/KspHarness/Plugins/KspHarness.Mod.dll is missing or was not loaded";
             }
         }

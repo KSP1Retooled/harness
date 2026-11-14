@@ -84,10 +84,13 @@ public sealed class Instance
         string recordPath = System.IO.Path.Combine(root, HarnessFolder, RecordFileName);
         if (!File.Exists(recordPath))
         {
-            throw new InstallException($"{root} is not a finished instance: it has no {HarnessFolder}/{RecordFileName}");
+            throw new InstallException(
+                $"{root} is not a finished instance: it has no {HarnessFolder}/{RecordFileName}"
+            );
         }
 
-        var record = JsonSerializer.Deserialize<InstanceRecord>(File.ReadAllText(recordPath), InstanceRecord.JsonOptions)
+        var record =
+            JsonSerializer.Deserialize<InstanceRecord>(File.ReadAllText(recordPath), InstanceRecord.JsonOptions)
             ?? throw new InstallException($"{recordPath} is empty");
         return new Instance(System.IO.Path.GetFullPath(root), record, lockFile);
     }
@@ -265,7 +268,8 @@ public sealed class Instance
         if (running.Count > 0)
         {
             throw new InstallException(
-                $"cannot {action}: a game is running in {Root} (pid {string.Join(", ", running)}); quit it first");
+                $"cannot {action}: a game is running in {Root} (pid {string.Join(", ", running)}); quit it first"
+            );
         }
     }
 
@@ -290,11 +294,12 @@ public sealed class Instance
             return false;
         }
 
-        static List<string> RelativeFiles(string root) => System.IO.Directory
-            .EnumerateFiles(root, "*", SearchOption.AllDirectories)
-            .Select(file => System.IO.Path.GetRelativePath(root, file))
-            .Order(StringComparer.Ordinal)
-            .ToList();
+        static List<string> RelativeFiles(string root) =>
+            System
+                .IO.Directory.EnumerateFiles(root, "*", SearchOption.AllDirectories)
+                .Select(file => System.IO.Path.GetRelativePath(root, file))
+                .Order(StringComparer.Ordinal)
+                .ToList();
 
         var sourceFiles = RelativeFiles(source);
         if (!sourceFiles.SequenceEqual(RelativeFiles(dest), StringComparer.Ordinal))
@@ -306,7 +311,10 @@ public sealed class Instance
         {
             var a = new FileInfo(System.IO.Path.Combine(source, relative));
             var b = new FileInfo(System.IO.Path.Combine(dest, relative));
-            if (a.Length != b.Length || !File.ReadAllBytes(a.FullName).AsSpan().SequenceEqual(File.ReadAllBytes(b.FullName)))
+            if (
+                a.Length != b.Length
+                || !File.ReadAllBytes(a.FullName).AsSpan().SequenceEqual(File.ReadAllBytes(b.FullName))
+            )
             {
                 return false;
             }

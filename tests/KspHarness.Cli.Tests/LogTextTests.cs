@@ -8,7 +8,14 @@ public sealed class LogTextTests
     public void Entries_that_arrive_between_the_cursor_and_the_snapshot_are_not_skipped()
     {
         // The cursor read 10; entries 10 and 11 arrived before the snapshot was taken.
-        var (page, next) = LogText.Page(10, [Entry(8), Entry(9), Entry(10), Entry(11)], since: null, [], null, limit: 100);
+        var (page, next) = LogText.Page(
+            10,
+            [Entry(8), Entry(9), Entry(10), Entry(11)],
+            since: null,
+            [],
+            null,
+            limit: 100
+        );
 
         Assert.Equal([8L, 9L, 10L, 11L], page.Select(e => e.Seq));
         Assert.Equal(12, next);
@@ -26,7 +33,14 @@ public sealed class LogTextTests
     [Fact]
     public void Filtered_out_entries_still_move_the_cursor_past_the_snapshot()
     {
-        var (page, next) = LogText.Page(5, [Entry(5, LogLevel.Error), Entry(6)], since: 5, ["errors"], null, limit: 100);
+        var (page, next) = LogText.Page(
+            5,
+            [Entry(5, LogLevel.Error), Entry(6)],
+            since: 5,
+            ["errors"],
+            null,
+            limit: 100
+        );
 
         Assert.Equal(5, Assert.Single(page).Seq);
         Assert.Equal(7, next);

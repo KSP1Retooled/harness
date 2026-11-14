@@ -80,7 +80,9 @@ public sealed class LockFile
         catch (JsonException e)
         {
             throw new InstallException(
-                $"lock file {path} is not valid ({e.Message}); fix it or build with LockMode.Update to rewrite it", e);
+                $"lock file {path} is not valid ({e.Message}); fix it or build with LockMode.Update to rewrite it",
+                e
+            );
         }
 
         if (lockFile is null)

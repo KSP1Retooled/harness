@@ -21,7 +21,8 @@ public sealed partial class InstallBuilder
         if (Included is not null)
         {
             throw new InvalidOperationException(
-                $"a definition can include only one other; it already includes {Included.Name}");
+                $"a definition can include only one other; it already includes {Included.Name}"
+            );
         }
 
         Included = typeof(TDefinition);

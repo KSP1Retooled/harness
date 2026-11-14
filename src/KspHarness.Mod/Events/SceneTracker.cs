@@ -55,6 +55,14 @@ internal sealed class SceneTracker
 
     private void Publish(GameScenes from, GameScenes to, string phase)
     {
-        hub.Publish("scene", new JsonObject { { "from", from.ToString() }, { "to", to.ToString() }, { "phase", phase } });
+        hub.Publish(
+            "scene",
+            new JsonObject
+            {
+                { "from", from.ToString() },
+                { "to", to.ToString() },
+                { "phase", phase },
+            }
+        );
     }
 }

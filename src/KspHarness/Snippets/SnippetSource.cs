@@ -29,7 +29,8 @@ internal sealed record SnippetSource(
     string Code,
     IReadOnlyList<Capture> Captures,
     IReadOnlyList<string> Usings,
-    SourcePosition Position)
+    SourcePosition Position
+)
 {
     public const string Namespace = "KspHarness.Snippets";
 
@@ -75,7 +76,9 @@ internal sealed record SnippetSource(
         for (var i = 0; i < Captures.Count; i++)
         {
             var capture = Captures[i];
-            source.Append($"            {capture.TypeSyntax} {capture.Name} = Args.Get<{capture.TypeSyntax}>(__args, {i});\n");
+            source.Append(
+                $"            {capture.TypeSyntax} {capture.Name} = Args.Get<{capture.TypeSyntax}>(__args, {i});\n"
+            );
         }
 
         var code = Code.ReplaceLineEndings("\n");

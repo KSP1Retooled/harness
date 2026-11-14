@@ -24,7 +24,14 @@ public sealed class TextApprovalTests : IDisposable
     [Fact]
     public void Objects_serialise_as_indented_json_with_sorted_keys()
     {
-        var text = ApprovalText.Serialize(new { zeta = 1, alpha = new { b = true, a = "x" }, list = new[] { 1.5, 2 } });
+        var text = ApprovalText.Serialize(
+            new
+            {
+                zeta = 1,
+                alpha = new { b = true, a = "x" },
+                list = new[] { 1.5, 2 },
+            }
+        );
 
         Assert.Equal(
             """
@@ -41,7 +48,8 @@ public sealed class TextApprovalTests : IDisposable
             }
 
             """.ReplaceLineEndings("\n"),
-            text);
+            text
+        );
     }
 
     [Fact]
@@ -104,7 +112,8 @@ public sealed class TextApprovalTests : IDisposable
              line 13
 
             """.ReplaceLineEndings("\n"),
-            e.Message);
+            e.Message
+        );
         Assert.True(File.Exists(Received("lines")));
     }
 

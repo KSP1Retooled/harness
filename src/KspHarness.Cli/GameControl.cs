@@ -36,14 +36,16 @@ public static class GameControl
     public static async Task<(SessionFile Session, GameSession Game)> LaunchAsync(
         LaunchRequest request,
         Action<string>? log = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         var instance = Instance.Open(request.InstanceDir);
         var existing = SessionFile.Read(instance.Root, log);
         if (existing is not null && existing.IsAlive())
         {
             throw new InvalidOperationException(
-                $"a game is already running in {instance.Root} (pid {existing.Pid}); attach to it or quit it first");
+                $"a game is already running in {instance.Root} (pid {existing.Pid}); attach to it or quit it first"
+            );
         }
 
         if (HarnessMod.DeployTo(instance))
@@ -74,7 +76,14 @@ public static class GameControl
         try
         {
             game = await GameSession.ConnectStartedAsync(
-                process, port, token, instance.Root, playerLog, request.BootTimeout, cancellationToken);
+                process,
+                port,
+                token,
+                instance.Root,
+                playerLog,
+                request.BootTimeout,
+                cancellationToken
+            );
         }
         catch
         {
@@ -109,8 +118,9 @@ public static class GameControl
             throw new GameNotAtMenuException(
                 session,
                 $"the game (pid {process.Id}) is running and connected but did not reach the main menu "
-                + $"({SnippetRunner.Describe(e)}); it keeps running: attach to it to look, or quit it",
-                e);
+                    + $"({SnippetRunner.Describe(e)}); it keeps running: attach to it to look, or quit it",
+                e
+            );
         }
     }
 
@@ -127,12 +137,19 @@ public static class GameControl
         var session = RunningSession(instanceDir);
         try
         {
-            return await GameSession.ConnectAsync(session.Port, session.Token, session.Instance, cancellationToken: cancellationToken);
+            return await GameSession.ConnectAsync(
+                session.Port,
+                session.Token,
+                session.Instance,
+                cancellationToken: cancellationToken
+            );
         }
         catch (SocketException e)
         {
             throw new InvalidOperationException(
-                $"the game (pid {session.Pid}) is running but not listening on port {session.Port} yet: {e.Message}", e);
+                $"the game (pid {session.Pid}) is running but not listening on port {session.Port} yet: {e.Message}",
+                e
+            );
         }
     }
 
@@ -147,13 +164,16 @@ public static class GameControl
     /// <summary>The session file of a game that is still running; throws when there is none.</summary>
     public static SessionFile RunningSession(string instanceDir)
     {
-        var session = SessionFile.Read(instanceDir)
+        var session =
+            SessionFile.Read(instanceDir)
             ?? throw new InvalidOperationException(
-                $"no game was launched in {Path.GetFullPath(instanceDir)}: run `ksph launch --instance <dir>` first");
+                $"no game was launched in {Path.GetFullPath(instanceDir)}: run `ksph launch --instance <dir>` first"
+            );
         if (!session.IsAlive())
         {
             throw new InvalidOperationException(
-                $"the game launched in {session.Instance} (pid {session.Pid}) is no longer running");
+                $"the game launched in {session.Instance} (pid {session.Pid}) is no longer running"
+            );
         }
 
         return session;
@@ -163,7 +183,11 @@ public static class GameControl
     /// Asks the instance's game to quit and waits for it to exit; kills it after <see cref="QuitTimeout"/> or when it
     /// does not answer. Returns false when no game was running.
     /// </summary>
-    public static async Task<bool> QuitAsync(string instanceDir, Action<string>? log = null, CancellationToken cancellationToken = default)
+    public static async Task<bool> QuitAsync(
+        string instanceDir,
+        Action<string>? log = null,
+        CancellationToken cancellationToken = default
+    )
     {
         var session = SessionFile.Read(instanceDir, log);
         if (session is null || !session.IsAlive())
@@ -176,10 +200,15 @@ public static class GameControl
         try
         {
             await using var game = await GameSession.ConnectAsync(
-                session.Port, session.Token, session.Instance, cancellationToken: cancellationToken);
+                session.Port,
+                session.Token,
+                session.Instance,
+                cancellationToken: cancellationToken
+            );
             await game.QuitAsync(cancellationToken);
         }
-        catch (Exception e) when (e is SocketException or GameRpcException or GameConnectionLostException or TimeoutException)
+        catch (Exception e)
+            when (e is SocketException or GameRpcException or GameConnectionLostException or TimeoutException)
         {
             log?.Invoke($"the game did not take the quit request ({e.Message}); killing it");
             GameSession.Kill(process);
@@ -220,7 +249,8 @@ public static class GameControl
         {
             throw new PlatformNotSupportedException(
                 $"{instance.Root} holds the {layout.Platform} build of the game, which this machine cannot run; build "
-                + "the instance from a starting install for this operating system");
+                    + "the instance from a starting install for this operating system"
+            );
         }
 
         var start = StartInfo(layout.LaunchPath, instance.Root, arguments, OperatingSystem.IsWindows());
@@ -234,7 +264,11 @@ public static class GameControl
     /// <c>sh</c> points them at <c>/dev/null</c> and then <c>exec</c>s the game, which keeps the process id.
     /// </summary>
     internal static ProcessStartInfo StartInfo(
-        string executable, string workingDirectory, IReadOnlyList<string> arguments, bool windows)
+        string executable,
+        string workingDirectory,
+        IReadOnlyList<string> arguments,
+        bool windows
+    )
     {
         var start = new ProcessStartInfo(windows ? executable : "/bin/sh")
         {
@@ -257,7 +291,6 @@ public static class GameControl
 
         return start;
     }
-
 }
 
 /// <summary>

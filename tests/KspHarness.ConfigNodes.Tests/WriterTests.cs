@@ -41,7 +41,8 @@ public class WriterTests
     public void Round_trips_parsed_text()
     {
         // KSP writes an empty key or node name as nothing before " = " or the brace line.
-        const string text = "a = 1\nb = x = y\n = anonymous\nN\n{\n\tname = n\n\t\n\t{\n\t\tinner = 1\n\t}\n\tM\n\t{\n\t}\n}\n";
+        const string text =
+            "a = 1\nb = x = y\n = anonymous\nN\n{\n\tname = n\n\t\n\t{\n\t\tinner = 1\n\t}\n\tM\n\t{\n\t}\n}\n";
 
         var root = ConfigParser.Parse(text);
 

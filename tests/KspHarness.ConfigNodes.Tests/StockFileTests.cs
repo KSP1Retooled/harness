@@ -49,7 +49,13 @@ public class StockFileTests
         var partLine = new Regex(@"^\s*PART\s*$");
         var expected = 0;
         var actual = 0;
-        foreach (var file in Directory.EnumerateFiles(Path.Combine(TestData.KspDir, "GameData", "Squad"), "*.cfg", SearchOption.AllDirectories))
+        foreach (
+            var file in Directory.EnumerateFiles(
+                Path.Combine(TestData.KspDir, "GameData", "Squad"),
+                "*.cfg",
+                SearchOption.AllDirectories
+            )
+        )
         {
             expected += File.ReadLines(file).Count(line => partLine.IsMatch(line));
             actual += ConfigFile.Load(file).GetNodes("PART").Count;
@@ -81,17 +87,35 @@ public class StockFileTests
         var bigEngineParts = database.Select("PART:HAS[@MODULE[ModuleEngines*]:HAS[#maxThrust[>100]]]");
 
         var expectedModules = database.Nodes.SelectMany(Descendants).Where(IsEngineModule).ToList();
-        var expectedParts = database.Nodes
-            .Where(node => node.Name == "PART")
-            .Where(part => part.GetNodes("MODULE").Any(module => IsEngineModule(module)
-                && module.GetValues("maxThrust").Any(text => double.TryParse(text, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var thrust) && thrust > 100)))
+        var expectedParts = database
+            .Nodes.Where(node => node.Name == "PART")
+            .Where(part =>
+                part.GetNodes("MODULE")
+                    .Any(module =>
+                        IsEngineModule(module)
+                        && module
+                            .GetValues("maxThrust")
+                            .Any(text =>
+                                double.TryParse(
+                                    text,
+                                    System.Globalization.NumberStyles.Float,
+                                    System.Globalization.CultureInfo.InvariantCulture,
+                                    out var thrust
+                                )
+                                && thrust > 100
+                            )
+                    )
+            )
             .ToList();
 
         Assert.True(engineModules.Count > 50);
         Assert.Equal(expectedModules, engineModules);
         Assert.NotEmpty(bigEngineParts);
         Assert.Equal(expectedParts, bigEngineParts);
-        Assert.Contains(database.SelectConfigs("PART[liquidEngine]"), config => config.Url == "Squad/Parts/Engine/liquidEngineLV-T30/liquidEngineLV-T30/liquidEngine");
+        Assert.Contains(
+            database.SelectConfigs("PART[liquidEngine]"),
+            config => config.Url == "Squad/Parts/Engine/liquidEngineLV-T30/liquidEngineLV-T30/liquidEngine"
+        );
     }
 
     [FactWithData(TestData.KspDirVariable)]
@@ -104,7 +128,10 @@ public class StockFileTests
 
         Assert.Equal(new[] { "#autoLOC_6002442", "#autoLOC_6002443" }, landed.Select(vessel => vessel.NameValue));
         Assert.Equal(landed, root.Select("//VESSEL:HAS[#sit[LANDED]]"));
-        Assert.All(root.Select("//VESSEL:HAS[~sit[LANDED]]"), vessel => Assert.Equal("ORBITING", vessel.GetValue("sit")));
+        Assert.All(
+            root.Select("//VESSEL:HAS[~sit[LANDED]]"),
+            vessel => Assert.Equal("ORBITING", vessel.GetValue("sit"))
+        );
     }
 
     [FactWithData(TestData.KspDirVariable)]

@@ -40,28 +40,29 @@ public sealed partial class GameLayout
     public string LaunchPath => Platform == GamePlatform.MacOS ? MacBinary(Executable) : Executable;
 
     /// <summary>Unity's native player library, which a Retooled patch replaces along with the managed code.</summary>
-    public string PlayerLibrary => Platform switch
-    {
-        GamePlatform.Windows => Path.Combine(Root, "UnityPlayer.dll"),
-        GamePlatform.Linux => Path.Combine(Root, "UnityPlayer.so"),
-        _ => Path.Combine(Executable, "Contents", "Frameworks", "UnityPlayer.dylib"),
-    };
+    public string PlayerLibrary =>
+        Platform switch
+        {
+            GamePlatform.Windows => Path.Combine(Root, "UnityPlayer.dll"),
+            GamePlatform.Linux => Path.Combine(Root, "UnityPlayer.so"),
+            _ => Path.Combine(Executable, "Contents", "Frameworks", "UnityPlayer.dylib"),
+        };
 
     /// <summary>
     /// The name the operating system lists the running game under: Windows drops the <c>.exe</c>, Linux and macOS
     /// use the binary's whole file name (<c>KSP.x86_64</c> keeps its suffix).
     /// </summary>
-    public string ProcessName => Platform == GamePlatform.Windows
-        ? Path.GetFileNameWithoutExtension(Executable)
-        : Path.GetFileName(LaunchPath);
+    public string ProcessName =>
+        Platform == GamePlatform.Windows ? Path.GetFileNameWithoutExtension(Executable) : Path.GetFileName(LaunchPath);
 
     /// <summary>Whether this machine can start the player: the harness does not run games under Wine or Proton.</summary>
-    public bool RunsOnThisMachine => Platform switch
-    {
-        GamePlatform.Windows => OperatingSystem.IsWindows(),
-        GamePlatform.Linux => OperatingSystem.IsLinux(),
-        _ => OperatingSystem.IsMacOS(),
-    };
+    public bool RunsOnThisMachine =>
+        Platform switch
+        {
+            GamePlatform.Windows => OperatingSystem.IsWindows(),
+            GamePlatform.Linux => OperatingSystem.IsLinux(),
+            _ => OperatingSystem.IsMacOS(),
+        };
 
     public string DataDir { get; }
 
@@ -140,8 +141,12 @@ public sealed partial class GameLayout
         [
             new(root, GamePlatform.Windows, Path.Combine(root, "KSP_x64.exe"), Path.Combine(root, "KSP_x64_Data")),
             new(root, GamePlatform.Linux, Path.Combine(root, "KSP.x86_64"), Path.Combine(root, "KSP_Data")),
-            new(root, GamePlatform.MacOS, Path.Combine(root, "KSP.app"),
-                Path.Combine(root, "KSP.app", "Contents", "Resources", "Data")),
+            new(
+                root,
+                GamePlatform.MacOS,
+                Path.Combine(root, "KSP.app"),
+                Path.Combine(root, "KSP.app", "Contents", "Resources", "Data")
+            ),
         ];
     }
 

@@ -42,6 +42,5 @@ public struct GameTime : IEquatable<GameTime>, IComparable<GameTime>
 
     public int CompareTo(GameTime other) => TotalSeconds.CompareTo(other.TotalSeconds);
 
-    public override string ToString() =>
-        TotalSeconds.ToString("0.###", CultureInfo.InvariantCulture) + " s game time";
+    public override string ToString() => TotalSeconds.ToString("0.###", CultureInfo.InvariantCulture) + " s game time";
 }

@@ -11,16 +11,17 @@ namespace KspHarness;
 public sealed record PopupPolicy
 {
     /// <summary>The library's rules and closers, answering everything else with the default buttons.</summary>
-    public static PopupPolicy Default { get; } = new()
-    {
-        // Pressing Escape on it only brings it back, and the instance builder's file gives the same answer.
-        Dialogs = [new DialogAnswer("TextureLoaderOptimizations", "Yes")],
+    public static PopupPolicy Default { get; } =
+        new()
+        {
+            // Pressing Escape on it only brings it back, and the instance builder's file gives the same answer.
+            Dialogs = [new DialogAnswer("TextureLoaderOptimizations", "Yes")],
 
-        // Stock's first-run windows on the main menu (Unity Analytics privacy notice, What's New, the expansion
-        // adverts) sit on the dialog canvas with a Close button in their footer.
-        CloseButtons = ["_UIMaster/DialogCanvas/*(Clone)/Footer/ButtonClose"],
-        Closers = WindowClosers.All,
-    };
+            // Stock's first-run windows on the main menu (Unity Analytics privacy notice, What's New, the expansion
+            // adverts) sit on the dialog canvas with a Close button in their footer.
+            CloseButtons = ["_UIMaster/DialogCanvas/*(Clone)/Footer/ButtonClose"],
+            Closers = WindowClosers.All,
+        };
 
     /// <summary>Closes nothing, for a test about the popups themselves.</summary>
     public static PopupPolicy None { get; } = new() { AnswerOthers = false, Settle = TimeSpan.Zero };
@@ -77,33 +78,37 @@ public sealed record ClosedPopup(string Kind, string Name, string Detail)
 public static class WindowClosers
 {
     /// <summary>Toolbar Controller's intro window (KSC); hides it for this run only, as its OK button does.</summary>
-    public static WindowCloser ToolbarControllerIntro { get; } = new(
-        "ToolbarController.Intro",
-        "ToolbarControl",
-        """
-        bool shown = ToolbarControl_NS.IntroWindowClass.showHelp;
-        ToolbarControl_NS.IntroWindowClass.showHelp = false;
-        return shown;
-        """);
+    public static WindowCloser ToolbarControllerIntro { get; } =
+        new(
+            "ToolbarController.Intro",
+            "ToolbarControl",
+            """
+            bool shown = ToolbarControl_NS.IntroWindowClass.showHelp;
+            ToolbarControl_NS.IntroWindowClass.showHelp = false;
+            return shown;
+            """
+        );
 
     /// <summary>
     /// Click Through Blocker's focus model window (KSC, each new game); closes it as Cancel does, without choosing,
     /// so the next new game asks again.
     /// </summary>
-    public static WindowCloser ClickThroughBlockerFocus { get; } = new(
-        "ClickThroughBlocker.Focus",
-        "ClickThroughBlocker",
-        """
-        var popup = ClickThroughFix.OneTimePopup.Instance;
-        if (popup == null || !popup.visible)
-        {
-            return false;
-        }
+    public static WindowCloser ClickThroughBlockerFocus { get; } =
+        new(
+            "ClickThroughBlocker.Focus",
+            "ClickThroughBlocker",
+            """
+            var popup = ClickThroughFix.OneTimePopup.Instance;
+            if (popup == null || !popup.visible)
+            {
+                return false;
+            }
 
-        popup.visible = false;
-        Object.Destroy(popup);
-        return true;
-        """);
+            popup.visible = false;
+            Object.Destroy(popup);
+            return true;
+            """
+        );
 
     public static IReadOnlyList<WindowCloser> All { get; } = [ToolbarControllerIntro, ClickThroughBlockerFocus];
 }

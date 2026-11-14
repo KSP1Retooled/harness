@@ -53,7 +53,8 @@ internal static class LogText
         long? since,
         IReadOnlyCollection<string> levels,
         string? mod,
-        int limit)
+        int limit
+    )
     {
         limit = Math.Max(limit, 1);
         var matching = snapshot.Where(e => Matches(e, levels, mod)).ToList();
@@ -78,13 +79,15 @@ internal static class LogText
         {
             var levelMatches = levels.Any(level =>
                 level.Equals(entry.Level.ToString(), StringComparison.OrdinalIgnoreCase)
-                || (level.Equals("errors", StringComparison.OrdinalIgnoreCase) && entry.IsError));
+                || (level.Equals("errors", StringComparison.OrdinalIgnoreCase) && entry.IsError)
+            );
             if (!levelMatches)
             {
                 return false;
             }
         }
 
-        return string.IsNullOrEmpty(mod) || entry.Mods.Any(tag => tag.Contains(mod, StringComparison.OrdinalIgnoreCase));
+        return string.IsNullOrEmpty(mod)
+            || entry.Mods.Any(tag => tag.Contains(mod, StringComparison.OrdinalIgnoreCase));
     }
 }

@@ -1,5 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <RootNamespace>KspHarness</RootNamespace>
@@ -34,14 +33,17 @@
   </PropertyGroup>
 
   <ItemGroup Condition="Exists('..\KspHarness.Mod\KspHarness.Mod.csproj') And '$(KspDir)' != ''">
-    <ProjectReference Include="..\KspHarness.Mod\KspHarness.Mod.csproj"
-                      ReferenceOutputAssembly="false"
-                      SkipGetTargetFrameworkProperties="true"
-                      GlobalPropertiesToRemove="TargetFramework" />
-    <None Include="$(HarnessModOutputDir)KspHarness.Mod.dll;$(HarnessModOutputDir)KspHarness.Mod.pdb"
-          Link="mod/GameData/KspHarness/Plugins/%(Filename)%(Extension)"
-          CopyToOutputDirectory="PreserveNewest"
-          Visible="false" />
+    <ProjectReference
+      Include="..\KspHarness.Mod\KspHarness.Mod.csproj"
+      ReferenceOutputAssembly="false"
+      SkipGetTargetFrameworkProperties="true"
+      GlobalPropertiesToRemove="TargetFramework"
+    />
+    <None
+      Include="$(HarnessModOutputDir)KspHarness.Mod.dll;$(HarnessModOutputDir)KspHarness.Mod.pdb"
+      Link="mod/GameData/KspHarness/Plugins/%(Filename)%(Extension)"
+      CopyToOutputDirectory="PreserveNewest"
+      Visible="false"
+    />
   </ItemGroup>
-
 </Project>

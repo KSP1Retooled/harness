@@ -37,7 +37,8 @@ public sealed record DirectoryStep(string SourceDir, string DestRelative, string
         }
 
         using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
-        var files = System.IO.Directory.EnumerateFiles(sourceDir, "*", SearchOption.AllDirectories)
+        var files = System
+            .IO.Directory.EnumerateFiles(sourceDir, "*", SearchOption.AllDirectories)
             .Select(file => (Full: file, Relative: Path.GetRelativePath(sourceDir, file).Replace('\\', '/')))
             .OrderBy(file => file.Relative, StringComparer.Ordinal);
 

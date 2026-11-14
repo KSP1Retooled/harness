@@ -51,7 +51,8 @@ public static class SuiteRunner
         {
             var reasons = e.LoaderExceptions.OfType<Exception>().Select(loader => loader.Message).Distinct();
             await Console.Error.WriteLineAsync(
-                $"the suite assembly's types did not load: {string.Join(Environment.NewLine, reasons)}");
+                $"the suite assembly's types did not load: {string.Join(Environment.NewLine, reasons)}"
+            );
             return 2;
         }
 
@@ -87,7 +88,9 @@ public static class SuiteRunner
         {
             await Console.Error.WriteLineAsync(
                 $"name a starting install with --start or {SuiteRunnerOptions.StartVariable}"
-                + Environment.NewLine + SuiteRunnerOptions.Usage);
+                    + Environment.NewLine
+                    + SuiteRunnerOptions.Usage
+            );
             return 2;
         }
 
@@ -126,7 +129,9 @@ public static class SuiteRunner
         var testCount = groups.Sum(group => group.Tests.Count);
         await output.WriteLineAsync(
             $"run {runId}: {testCount} tests in {groups.Count} installs on {start.Kind} {start.KspVersion}"
-            + (start.RetooledVersion is null ? "" : $" (Retooled {start.RetooledVersion})") + $" from {start.Root}");
+                + (start.RetooledVersion is null ? "" : $" (Retooled {start.RetooledVersion})")
+                + $" from {start.Root}"
+        );
 
         var results = new List<TestResult>();
         var summaries = new List<GroupSummary>();
@@ -171,7 +176,8 @@ public static class SuiteRunner
         var summaryPath = Path.Combine(runDir, "summary.json");
         await File.WriteAllTextAsync(summaryPath, JsonSerializer.Serialize(summary, SummaryJson));
         await output.WriteLineAsync(
-            $"{passed} passed, {results.Count - passed} did not pass, in {FormatDuration(clock.Elapsed)}; {summaryPath}");
+            $"{passed} passed, {results.Count - passed} did not pass, in {FormatDuration(clock.Elapsed)}; {summaryPath}"
+        );
         return passed == results.Count ? 0 : 1;
     }
 
@@ -220,14 +226,21 @@ public static class SuiteRunner
         }
 
         return groups
-            .Select(group => group with { Tests = group.Tests.Where(test => options.Filter.IsMatch(test.FullName)).ToList() })
+            .Select(group =>
+                group with
+                {
+                    Tests = group.Tests.Where(test => options.Filter.IsMatch(test.FullName)).ToList(),
+                }
+            )
             .Where(group => group.Tests.Count > 0)
             .ToList();
     }
 
     private static string? LockDirectory(Assembly assembly)
     {
-        return assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
-            .FirstOrDefault(attribute => attribute.Key == LockDirectoryKey)?.Value;
+        return assembly
+            .GetCustomAttributes<AssemblyMetadataAttribute>()
+            .FirstOrDefault(attribute => attribute.Key == LockDirectoryKey)
+            ?.Value;
     }
 }

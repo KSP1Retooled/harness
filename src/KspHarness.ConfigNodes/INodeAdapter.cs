@@ -25,9 +25,7 @@ public sealed class CfgNodeAdapter : INodeAdapter<CfgNode>
 {
     public static readonly CfgNodeAdapter Instance = new CfgNodeAdapter();
 
-    private CfgNodeAdapter()
-    {
-    }
+    private CfgNodeAdapter() { }
 
     public string GetName(CfgNode node)
     {

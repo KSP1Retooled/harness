@@ -25,10 +25,13 @@ public sealed class SnippetCompiler
 
     private static readonly PropertyInfo? TopLevelBinderFlags = typeof(CSharpCompilationOptions).GetProperty(
         "TopLevelBinderFlags",
-        BindingFlags.Instance | BindingFlags.NonPublic);
+        BindingFlags.Instance | BindingFlags.NonPublic
+    );
 
     private static readonly string CompilerVersion =
-        typeof(CSharpCompilation).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
+        typeof(CSharpCompilation)
+            .Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+            ?.InformationalVersion
         ?? typeof(CSharpCompilation).Assembly.GetName().Version!.ToString();
 
     private static readonly CSharpParseOptions ParseOptions = new(LanguageVersion.Latest, DocumentationMode.None);
@@ -55,17 +58,18 @@ public sealed class SnippetCompiler
     internal static CSharpCompilationOptions CreateOptions()
     {
         var options = new CSharpCompilationOptions(
-                OutputKind.DynamicallyLinkedLibrary,
-                allowUnsafe: true,
-                optimizationLevel: OptimizationLevel.Debug,
-                deterministic: true,
-                nullableContextOptions: NullableContextOptions.Disable)
-            .WithMetadataImportOptions(MetadataImportOptions.All);
+            OutputKind.DynamicallyLinkedLibrary,
+            allowUnsafe: true,
+            optimizationLevel: OptimizationLevel.Debug,
+            deterministic: true,
+            nullableContextOptions: NullableContextOptions.Disable
+        ).WithMetadataImportOptions(MetadataImportOptions.All);
 
         if (TopLevelBinderFlags is null)
         {
             throw new InvalidOperationException(
-                $"Roslyn {CompilerVersion} has no TopLevelBinderFlags, which snippets need to reach private members");
+                $"Roslyn {CompilerVersion} has no TopLevelBinderFlags, which snippets need to reach private members"
+            );
         }
 
         TopLevelBinderFlags.SetValue(options, IgnoreAccessibility);
@@ -83,7 +87,9 @@ public sealed class SnippetCompiler
 
         var className = SnippetSource.ClassName(hash);
         var typeName = $"{SnippetSource.Namespace}.{className}";
-        var compiled = ReadDiskCache(hash, typeName) ?? Emit(snippet, generated.Replace("S_" + SnippetSource.HashPlaceholder, className), hash, typeName);
+        var compiled =
+            ReadDiskCache(hash, typeName)
+            ?? Emit(snippet, generated.Replace("S_" + SnippetSource.HashPlaceholder, className), hash, typeName);
         return memoryCache.GetOrAdd(hash, compiled);
     }
 
@@ -92,10 +98,14 @@ public sealed class SnippetCompiler
         // Everything else that goes into the assembly is part of the key too, since the disk cache outlives builds of
         // this library: the support sources and the options.
         var text = new StringBuilder()
-            .Append(FormatVersion).Append('\n')
-            .Append(CompilerVersion).Append('\n')
-            .Append(References.Identity).Append('\n')
-            .Append(supportFingerprint.Value).Append('\n')
+            .Append(FormatVersion)
+            .Append('\n')
+            .Append(CompilerVersion)
+            .Append('\n')
+            .Append(References.Identity)
+            .Append('\n')
+            .Append(supportFingerprint.Value)
+            .Append('\n')
             .Append(generated);
 
         return Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(text.ToString())));
@@ -110,27 +120,31 @@ public sealed class SnippetCompiler
         while (true)
         {
             // Extern aliases must come before every using directive, so they lead the file.
-            var aliasLines = string.Concat(aliased
-                .Order(StringComparer.Ordinal)
-                .Select(name => $"extern alias {ReferenceSet.AliasFor(name)};\n"));
+            var aliasLines = string.Concat(
+                aliased.Order(StringComparer.Ordinal).Select(name => $"extern alias {ReferenceSet.AliasFor(name)};\n")
+            );
             var text = aliasLines + source;
             var tree = CSharpSyntaxTree.ParseText(text, ParseOptions, path: "snippet.g.cs", encoding: Encoding.UTF8);
             var compilation = CSharpCompilation.Create(
                 "KspHarness.Snippet." + hash[..16],
                 [tree, .. supportTrees.Value],
                 References.ReferencesWithAliases(aliased),
-                CreateOptions());
+                CreateOptions()
+            );
 
             using var assembly = new MemoryStream();
             using var symbols = new MemoryStream();
-            var result = compilation.Emit(
-                assembly,
-                symbols,
-                options: EmitSettings);
+            var result = compilation.Emit(assembly, symbols, options: EmitSettings);
 
             if (result.Success)
             {
-                var compiled = new CompiledSnippet(hash, typeName, SnippetSource.MethodName, assembly.ToArray(), symbols.ToArray());
+                var compiled = new CompiledSnippet(
+                    hash,
+                    typeName,
+                    SnippetSource.MethodName,
+                    assembly.ToArray(),
+                    symbols.ToArray()
+                );
                 WriteDiskCache(compiled);
                 return compiled;
             }
@@ -152,8 +166,8 @@ public sealed class SnippetCompiler
         foreach (var diagnostic in diagnostics.Where(d => d.Id == "CS0433"))
         {
             var message = diagnostic.GetMessage(System.Globalization.CultureInfo.InvariantCulture);
-            var named = References.Files
-                .Select(file => file.AssemblyName)
+            var named = References
+                .Files.Select(file => file.AssemblyName)
                 .Where(name => message.Contains($"'{name},", StringComparison.Ordinal))
                 .OrderBy(References.PriorityOf)
                 .ToList();
@@ -170,17 +184,28 @@ public sealed class SnippetCompiler
         var trees = new List<SyntaxTree>();
         if (Polyfills.SourceFor(References.BaseCompilation) is { } polyfills)
         {
-            trees.Add(CSharpSyntaxTree.ParseText(polyfills, ParseOptions, path: "polyfills.g.cs", encoding: Encoding.UTF8));
+            trees.Add(
+                CSharpSyntaxTree.ParseText(polyfills, ParseOptions, path: "polyfills.g.cs", encoding: Encoding.UTF8)
+            );
         }
 
         // Mono reads this attribute when it checks member access, so private members stay in reach at run time too.
         var attributes = new StringBuilder("// <auto-generated/>\n");
         foreach (var file in References.Files)
         {
-            attributes.Append($"[assembly: System.Runtime.CompilerServices.IgnoresAccessChecksTo(\"{file.AssemblyName}\")]\n");
+            attributes.Append(
+                $"[assembly: System.Runtime.CompilerServices.IgnoresAccessChecksTo(\"{file.AssemblyName}\")]\n"
+            );
         }
 
-        trees.Add(CSharpSyntaxTree.ParseText(attributes.ToString(), ParseOptions, path: "access.g.cs", encoding: Encoding.UTF8));
+        trees.Add(
+            CSharpSyntaxTree.ParseText(
+                attributes.ToString(),
+                ParseOptions,
+                path: "access.g.cs",
+                encoding: Encoding.UTF8
+            )
+        );
         return trees.ToArray();
     }
 
@@ -195,14 +220,22 @@ public sealed class SnippetCompiler
 
         // CompilationOptions.GetHashCode mixes in string hashes, which differ between processes, so the settings
         // this compiler sets are spelled out instead.
-        text.Append(options.OutputKind).Append(';')
-            .Append(options.AllowUnsafe).Append(';')
-            .Append(options.OptimizationLevel).Append(';')
-            .Append(options.Deterministic).Append(';')
-            .Append(options.NullableContextOptions).Append(';')
-            .Append(options.MetadataImportOptions).Append(';')
-            .Append(TopLevelBinderFlags?.GetValue(options)).Append(';')
-            .Append(ParseOptions.LanguageVersion).Append(';')
+        text.Append(options.OutputKind)
+            .Append(';')
+            .Append(options.AllowUnsafe)
+            .Append(';')
+            .Append(options.OptimizationLevel)
+            .Append(';')
+            .Append(options.Deterministic)
+            .Append(';')
+            .Append(options.NullableContextOptions)
+            .Append(';')
+            .Append(options.MetadataImportOptions)
+            .Append(';')
+            .Append(TopLevelBinderFlags?.GetValue(options))
+            .Append(';')
+            .Append(ParseOptions.LanguageVersion)
+            .Append(';')
             .Append(EmitSettings.DebugInformationFormat);
 
         return Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(text.ToString())));

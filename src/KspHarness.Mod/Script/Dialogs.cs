@@ -12,9 +12,7 @@ namespace KspHarness.Script;
 public readonly struct DialogInfo
 {
     public DialogInfo(string name, string title, string message, string[] buttons)
-        : this(0, name, title, message, buttons)
-    {
-    }
+        : this(0, name, title, message, buttons) { }
 
     public DialogInfo(int id, string name, string title, string message, string[] buttons)
     {
@@ -43,7 +41,8 @@ public readonly struct DialogInfo
     /// <summary>The button captions, in layout order.</summary>
     public string[] Buttons { get; }
 
-    public override string ToString() => Name + " \"" + Title + "\" [" + string.Join(", ", Buttons ?? new string[0]) + "]";
+    public override string ToString() =>
+        Name + " \"" + Title + "\" [" + string.Join(", ", Buttons ?? new string[0]) + "]";
 }
 
 /// <summary>
@@ -76,7 +75,8 @@ public static class Dialogs
         var candidates = new List<(PopupDialog Popup, DialogGUIButton Button)>();
         foreach (PopupDialog popup in popups)
         {
-            DialogGUIButton match = Buttons(popup.dialogToDisplay.Options).FirstOrDefault(b => Names(Caption(b), button));
+            DialogGUIButton match = Buttons(popup.dialogToDisplay.Options)
+                .FirstOrDefault(b => Names(Caption(b), button));
             if (match != null)
                 candidates.Add((popup, match));
         }
@@ -84,14 +84,20 @@ public static class Dialogs
         if (candidates.Count == 0)
         {
             throw new InvalidOperationException(
-                "No open dialog" + (dialog == null ? "" : " matching '" + dialog + "'") + " has a button '" + button
-                + "'. Open: " + Summary());
+                "No open dialog"
+                    + (dialog == null ? "" : " matching '" + dialog + "'")
+                    + " has a button '"
+                    + button
+                    + "'. Open: "
+                    + Summary()
+            );
         }
 
         if (candidates.Count > 1)
         {
             throw new InvalidOperationException(
-                "More than one open dialog has a button '" + button + "'; name the dialog. Open: " + Summary());
+                "More than one open dialog has a button '" + button + "'; name the dialog. Open: " + Summary()
+            );
         }
 
         DialogGUIButton target = candidates[0].Button;
@@ -149,14 +155,20 @@ public static class Dialogs
     /// has passed.
     /// </summary>
     public static ScriptAwaitable<DialogInfo> WaitFor(string dialog = null, GameTime? timeout = null) =>
-        new DialogAwaitable(dialog, timeout.HasValue ? GameClock.GameSeconds + timeout.Value.TotalSeconds : (double?)null);
+        new DialogAwaitable(
+            dialog,
+            timeout.HasValue ? GameClock.GameSeconds + timeout.Value.TotalSeconds : (double?)null
+        );
 
     private static IEnumerable<PopupDialog> OpenPopups() => DialogWatcher.OpenPopups();
 
     private static IEnumerable<PopupDialog> Matching(string dialog) =>
-        OpenPopups().Where(popup => dialog == null
-            || Names(popup.dialogToDisplay.name, dialog)
-            || Names(popup.dialogToDisplay.title, dialog));
+        OpenPopups()
+            .Where(popup =>
+                dialog == null
+                || Names(popup.dialogToDisplay.name, dialog)
+                || Names(popup.dialogToDisplay.title, dialog)
+            );
 
     private static IEnumerable<PopupDialog> WithId(int id) => OpenPopups().Where(popup => popup.GetInstanceID() == id);
 
@@ -168,7 +180,8 @@ public static class Dialogs
             dialog.name,
             Ui.Normalize(dialog.title),
             Ui.Normalize(dialog.message),
-            Buttons(dialog.Options).Select(b => Ui.Normalize(Caption(b))).ToArray());
+            Buttons(dialog.Options).Select(b => Ui.Normalize(Caption(b))).ToArray()
+        );
     }
 
     private static string Summary()
@@ -196,7 +209,8 @@ public static class Dialogs
         button.GetString != null ? button.GetString() : button.OptionText;
 
     private static bool Names(string text, string pattern) =>
-        text != null && Wildcard.IsMatch(Ui.Normalize(pattern).ToLowerInvariant(), Ui.Normalize(text).ToLowerInvariant());
+        text != null
+        && Wildcard.IsMatch(Ui.Normalize(pattern).ToLowerInvariant(), Ui.Normalize(text).ToLowerInvariant());
 
     private sealed class DialogAwaitable : ScriptAwaitable<DialogInfo>
     {
@@ -220,7 +234,8 @@ public static class Dialogs
             if (deadline.HasValue && GameClock.GameSeconds >= deadline.Value)
             {
                 throw new TimeoutException(
-                    "Timed out waiting for " + (dialog == null ? "a dialog" : "the dialog '" + dialog + "'"));
+                    "Timed out waiting for " + (dialog == null ? "a dialog" : "the dialog '" + dialog + "'")
+                );
             }
 
             return false;

@@ -28,7 +28,8 @@ public sealed class SnippetCompileTests
             menu.ConfirmNewGame();
             return (int)MainMenu.newGameMode;
             """,
-            cancellationToken: Cancel);
+            cancellationToken: Cancel
+        );
 
         Assert.Equal(7, result);
         Assert.Single(fake.Game.Loaded);
@@ -47,7 +48,8 @@ public sealed class SnippetCompileTests
             await Wait.Frames(2);
             FlightInputHandler.state.mainThrottle = 1f;
             """,
-            cancellationToken: Cancel);
+            cancellationToken: Cancel
+        );
 
         Assert.Single(fake.Game.Loaded);
     }
@@ -60,19 +62,31 @@ public sealed class SnippetCompileTests
         var session = fake.Session;
 
         Assert.Equal(3, await session.Run(() => 1 + 2, cancellationToken: Cancel));
-        Assert.Equal(3, await session.Run(async () =>
-        {
-            await Tick.FixedUpdate;
-            return 3;
-        }, cancellationToken: Cancel));
-        await session.Run(async () =>
-        {
-            await Tick.Update;
-        }, cancellationToken: Cancel);
-        await session.Run(() =>
-        {
-            var unused = Math.Max(1, 2);
-        }, cancellationToken: Cancel);
+        Assert.Equal(
+            3,
+            await session.Run(
+                async () =>
+                {
+                    await Tick.FixedUpdate;
+                    return 3;
+                },
+                cancellationToken: Cancel
+            )
+        );
+        await session.Run(
+            async () =>
+            {
+                await Tick.Update;
+            },
+            cancellationToken: Cancel
+        );
+        await session.Run(
+            () =>
+            {
+                var unused = Math.Max(1, 2);
+            },
+            cancellationToken: Cancel
+        );
 
         // A Unity call that returns nothing still works as an expression lambda.
         await session.Run(() => Console.WriteLine("hello"), cancellationToken: Cancel);
@@ -90,25 +104,34 @@ public sealed class SnippetCompileTests
         double altitude = await session.Run(ksp => ksp.FlightGlobals.ActiveVessel.altitude, cancellationToken: Cancel);
         Assert.Equal(1.5, altitude);
 
-        var speed = await session.Run(async ksp =>
-        {
-            ksp.FlightInputHandler.state.mainThrottle = 1f;
-            ksp.KSP.UI.Screens.StageManager.ActivateNextStage();
-            var vessel = ksp.FlightGlobals.ActiveVessel;
-            await Tick.FixedUpdate;
-            return vessel.srfSpeed;
-        }, cancellationToken: Cancel);
+        var speed = await session.Run(
+            async ksp =>
+            {
+                ksp.FlightInputHandler.state.mainThrottle = 1f;
+                ksp.KSP.UI.Screens.StageManager.ActivateNextStage();
+                var vessel = ksp.FlightGlobals.ActiveVessel;
+                await Tick.FixedUpdate;
+                return vessel.srfSpeed;
+            },
+            cancellationToken: Cancel
+        );
         Assert.Equal(1.5, (double)speed);
 
-        await session.Run(async ksp =>
-        {
-            await Wait.Scene(ksp.GameScenes.FLIGHT);
-        }, cancellationToken: Cancel);
+        await session.Run(
+            async ksp =>
+            {
+                await Wait.Scene(ksp.GameScenes.FLIGHT);
+            },
+            cancellationToken: Cancel
+        );
 
-        await session.Run(ksp =>
-        {
-            ksp.Debug.Log("statement lambda");
-        }, cancellationToken: Cancel);
+        await session.Run(
+            ksp =>
+            {
+                ksp.Debug.Log("statement lambda");
+            },
+            cancellationToken: Cancel
+        );
 
         // Void in the game, dynamic in the test.
         await session.Run(ksp => ksp.Debug.Log("expression lambda"), cancellationToken: Cancel);
@@ -121,11 +144,15 @@ public sealed class SnippetCompileTests
     public async Task Captured_locals_are_sent_as_arguments(string install)
     {
         JsonArray? args = null;
-        await using var fake = await FakeSession.StartAsync(install, game => game.OnRun = (run, _) =>
-        {
-            args = run["args"]!.AsArray();
-            return Task.FromResult<JsonNode?>(2.0);
-        });
+        await using var fake = await FakeSession.StartAsync(
+            install,
+            game =>
+                game.OnRun = (run, _) =>
+                {
+                    args = run["args"]!.AsArray();
+                    return Task.FromResult<JsonNode?>(2.0);
+                }
+        );
 
         double target = 70000;
         var name = "Kerbin";
@@ -134,17 +161,20 @@ public sealed class SnippetCompileTests
         var timeout = GameTime.Seconds(30);
         {
             var factor = 2;
-            await fake.Session.Run(async ksp =>
-            {
-                var body = ksp.FlightGlobals.GetBodyByName(name);
-                while (ksp.FlightGlobals.ActiveVessel.altitude < target * factor)
+            await fake.Session.Run(
+                async ksp =>
                 {
-                    await Tick.FixedUpdate;
-                }
+                    var body = ksp.FlightGlobals.GetBodyByName(name);
+                    while (ksp.FlightGlobals.ActiveVessel.altitude < target * factor)
+                    {
+                        await Tick.FixedUpdate;
+                    }
 
-                await Wait.Until(() => body != null, timeout);
-                return body.Radius;
-            }, cancellationToken: Cancel);
+                    await Wait.Until(() => body != null, timeout);
+                    return body.Radius;
+                },
+                cancellationToken: Cancel
+            );
         }
 
         Assert.NotNull(args);
@@ -157,11 +187,15 @@ public sealed class SnippetCompileTests
     public async Task Captured_handle_is_declared_with_its_game_type(string install)
     {
         JsonNode? sent = null;
-        await using var fake = await FakeSession.StartAsync(install, game => game.OnRun = (run, _) =>
-        {
-            sent = run["args"]![0]?.DeepClone();
-            return Task.FromResult<JsonNode?>(null);
-        });
+        await using var fake = await FakeSession.StartAsync(
+            install,
+            game =>
+                game.OnRun = (run, _) =>
+                {
+                    sent = run["args"]![0]?.DeepClone();
+                    return Task.FromResult<JsonNode?>(null);
+                }
+        );
 
         dynamic vessel = new Handle(9, "Vessel", "Assembly-CSharp", "Kerbal X", fake.Session);
 
@@ -190,7 +224,9 @@ public sealed class SnippetCompileTests
         await using var fake = await FakeSession.StartAsync(install);
 
         var line = Line() + 1;
-        var error = await Assert.ThrowsAsync<SnippetCompileException>(() => fake.Session.Run(ksp => ksp.FlightGlobals.ActiveVessel.altitide, cancellationToken: Cancel));
+        var error = await Assert.ThrowsAsync<SnippetCompileException>(() =>
+            fake.Session.Run(ksp => ksp.FlightGlobals.ActiveVessel.altitide, cancellationToken: Cancel)
+        );
 
         Assert.Equal(ThisFile(), error.File);
         Assert.Equal(line, error.Line);
@@ -205,14 +241,17 @@ public sealed class SnippetCompileTests
         await using var fake = await FakeSession.StartAsync(install);
 
         var start = Line();
-        var error = await Assert.ThrowsAsync<SnippetCompileException>(() => fake.Session.Run(
-            async ksp =>
-            {
-                var vessel = ksp.FlightGlobals.ActiveVessel;
-                await Tick.FixedUpdate;
-                return ksp.FlightGlobals.NoSuchMember;
-            },
-            cancellationToken: Cancel));
+        var error = await Assert.ThrowsAsync<SnippetCompileException>(() =>
+            fake.Session.Run(
+                async ksp =>
+                {
+                    var vessel = ksp.FlightGlobals.ActiveVessel;
+                    await Tick.FixedUpdate;
+                    return ksp.FlightGlobals.NoSuchMember;
+                },
+                cancellationToken: Cancel
+            )
+        );
 
         Assert.Equal(ThisFile(), error.File);
         Assert.Equal(start + 6, error.Line);
@@ -225,12 +264,15 @@ public sealed class SnippetCompileTests
         await using var fake = await FakeSession.StartAsync(install);
 
         var start = Line();
-        var error = await Assert.ThrowsAsync<SnippetCompileException>(() => fake.Session.Run<double>(
-            """
-            var vessel = FlightGlobals.ActiveVessel;
-            return vessel.altitide;
-            """,
-            cancellationToken: Cancel));
+        var error = await Assert.ThrowsAsync<SnippetCompileException>(() =>
+            fake.Session.Run<double>(
+                """
+                var vessel = FlightGlobals.ActiveVessel;
+                return vessel.altitide;
+                """,
+                cancellationToken: Cancel
+            )
+        );
 
         Assert.Equal(ThisFile(), error.File);
         Assert.Equal(start + 4, error.Line);
@@ -243,7 +285,9 @@ public sealed class SnippetCompileTests
         await using var fake = await FakeSession.StartAsync(install);
 
         var line = Line() + 1;
-        var error = await Assert.ThrowsAsync<SnippetCompileException>(() => fake.Session.Run(ksp => Describe(ksp), cancellationToken: Cancel));
+        var error = await Assert.ThrowsAsync<SnippetCompileException>(() =>
+            fake.Session.Run(ksp => Describe(ksp), cancellationToken: Cancel)
+        );
 
         Assert.Equal(line, error.Line);
         Assert.Contains("'ksp'", error.Message);
@@ -255,7 +299,9 @@ public sealed class SnippetCompileTests
     {
         await using var fake = await FakeSession.StartAsync(install);
 
-        var error = await Assert.ThrowsAsync<SnippetCompileException>(() => fake.Session.Run(() => instanceValue + 1, cancellationToken: Cancel));
+        var error = await Assert.ThrowsAsync<SnippetCompileException>(() =>
+            fake.Session.Run(() => instanceValue + 1, cancellationToken: Cancel)
+        );
 
         Assert.Contains("instanceValue", error.Message);
         Assert.Contains("local", error.Message);
@@ -268,7 +314,9 @@ public sealed class SnippetCompileTests
         await using var fake = await FakeSession.StartAsync(install);
         var builder = new System.Text.StringBuilder();
 
-        var error = await Assert.ThrowsAsync<SnippetCompileException>(() => fake.Session.Run(() => builder.Length, cancellationToken: Cancel));
+        var error = await Assert.ThrowsAsync<SnippetCompileException>(() =>
+            fake.Session.Run(() => builder.Length, cancellationToken: Cancel)
+        );
 
         Assert.Contains("'builder'", error.Message);
     }
@@ -302,8 +350,8 @@ public sealed class SnippetCompileTests
     {
         using var pe = new PEReader(new MemoryStream(assembly));
         var reader = pe.GetMetadataReader();
-        var names = reader.TypeDefinitions
-            .Select(h => reader.GetTypeDefinition(h))
+        var names = reader
+            .TypeDefinitions.Select(h => reader.GetTypeDefinition(h))
             .Select(t => reader.GetString(t.Namespace) + "." + reader.GetString(t.Name))
             .ToArray();
 

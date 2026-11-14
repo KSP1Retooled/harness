@@ -55,8 +55,10 @@ public sealed class ApprovalContext
     public static string ResolveDirectory(Assembly assembly)
     {
         return DirectoryOverride
-            ?? assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
-                .FirstOrDefault(attribute => attribute.Key == DirectoryKey)?.Value
+            ?? assembly
+                .GetCustomAttributes<AssemblyMetadataAttribute>()
+                .FirstOrDefault(attribute => attribute.Key == DirectoryKey)
+                ?.Value
             ?? Path.Combine(Environment.CurrentDirectory, "approved");
     }
 

@@ -31,7 +31,8 @@ public sealed class ScriptSurfaceTests
         {
             Assert.True(
                 members.SetEquals(stubs[type]),
-                $"{type}: the mod has [{string.Join(", ", members.Order())}], the stubs have [{string.Join(", ", stubs[type].Order())}]");
+                $"{type}: the mod has [{string.Join(", ", members.Order())}], the stubs have [{string.Join(", ", stubs[type].Order())}]"
+            );
         }
     }
 
@@ -49,21 +50,27 @@ public sealed class ScriptSurfaceTests
             return null;
         }
 
-        return Directory.EnumerateFiles(bin, "KspHarness.Mod.dll", SearchOption.AllDirectories)
+        return Directory
+            .EnumerateFiles(bin, "KspHarness.Mod.dll", SearchOption.AllDirectories)
             .OrderByDescending(File.GetLastWriteTimeUtc)
             .FirstOrDefault();
     }
 
     private static Dictionary<string, HashSet<string>> StubSurface()
     {
-        const BindingFlags flags = BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly;
-        return typeof(GameTime).Assembly.GetExportedTypes()
+        const BindingFlags flags =
+            BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly;
+        return typeof(GameTime)
+            .Assembly.GetExportedTypes()
             .Where(t => t.Namespace == ScriptNamespace)
             .ToDictionary(
                 t => t.Name,
-                t => t.GetMethods(flags).Select(m => $"{m.Name}/{m.GetParameters().Length}")
-                    .Concat(t.GetFields(flags).Select(f => f.Name))
-                    .ToHashSet());
+                t =>
+                    t.GetMethods(flags)
+                        .Select(m => $"{m.Name}/{m.GetParameters().Length}")
+                        .Concat(t.GetFields(flags).Select(f => f.Name))
+                        .ToHashSet()
+            );
     }
 
     private static Dictionary<string, HashSet<string>> ModSurface(string path)

@@ -20,7 +20,11 @@ public static class ConfigFile
     /// <summary>Saves a root node with KSP's layout and line endings of <paramref name="newLine"/>.</summary>
     public static void Save(CfgNode root, string path, string newLine = "\r\n")
     {
-        using var writer = new StreamWriter(path, append: false, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+        using var writer = new StreamWriter(
+            path,
+            append: false,
+            new UTF8Encoding(encoderShouldEmitUTF8Identifier: false)
+        );
         writer.NewLine = newLine;
         ConfigWriter.WriteRoot(root, writer);
     }

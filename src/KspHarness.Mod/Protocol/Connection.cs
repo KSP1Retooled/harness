@@ -62,7 +62,8 @@ internal sealed class Connection
     public Connection(
         TcpClient client,
         Action<Connection, Dictionary<string, object>> onMessage,
-        Action<Connection> onClosed)
+        Action<Connection> onClosed
+    )
     {
         this.client = client;
         this.onMessage = onMessage;
@@ -117,7 +118,14 @@ internal sealed class Connection
 
     public void SendResult(long id, object result)
     {
-        Send(new JsonObject { { "jsonrpc", "2.0" }, { "id", id }, { "result", result ?? new JsonObject() } });
+        Send(
+            new JsonObject
+            {
+                { "jsonrpc", "2.0" },
+                { "id", id },
+                { "result", result ?? new JsonObject() },
+            }
+        );
     }
 
     public void SendError(long? id, int code, string message, object data = null)
@@ -126,12 +134,26 @@ internal sealed class Connection
         if (data != null)
             error.Add("data", data);
 
-        Send(new JsonObject { { "jsonrpc", "2.0" }, { "id", id }, { "error", error } });
+        Send(
+            new JsonObject
+            {
+                { "jsonrpc", "2.0" },
+                { "id", id },
+                { "error", error },
+            }
+        );
     }
 
     public void SendNotification(string method, object parameters)
     {
-        Send(new JsonObject { { "jsonrpc", "2.0" }, { "method", method }, { "params", parameters } });
+        Send(
+            new JsonObject
+            {
+                { "jsonrpc", "2.0" },
+                { "method", method },
+                { "params", parameters },
+            }
+        );
     }
 
     /// <summary>Sends what is queued and then closes, so an error reply reaches the client first.</summary>

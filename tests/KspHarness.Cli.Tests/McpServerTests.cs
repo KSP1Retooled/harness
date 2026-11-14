@@ -12,9 +12,24 @@ public sealed class McpServerTests
         var names = result["tools"]!.AsArray().Select(t => t!["name"]!.GetValue<string>()).Order().ToArray();
 
         Assert.Equal(
-            ["db_query", "db_values", "dialog_click", "dialogs_list", "game_attach", "game_launch", "game_quit",
-                "game_status", "instance_build", "logs", "run_csharp", "screenshot", "ui_click", "ui_describe"],
-            names);
+            [
+                "db_query",
+                "db_values",
+                "dialog_click",
+                "dialogs_list",
+                "game_attach",
+                "game_launch",
+                "game_quit",
+                "game_status",
+                "instance_build",
+                "logs",
+                "run_csharp",
+                "screenshot",
+                "ui_click",
+                "ui_describe",
+            ],
+            names
+        );
         var runCsharp = result["tools"]!.AsArray().Single(t => t!["name"]!.GetValue<string>() == "run_csharp")!;
         Assert.Contains("await Tick.FixedUpdate", runCsharp["description"]!.GetValue<string>());
         Assert.Equal("string", runCsharp["inputSchema"]!["properties"]!["code"]!["type"]!.GetValue<string>());

@@ -30,13 +30,16 @@ internal sealed class LogCapture
         publishing = true;
         try
         {
-            hub.Publish("log", new JsonObject
-            {
-                { "level", type.ToString() },
-                { "message", message },
-                { "stack", stackTrace ?? "" },
-                { "mods", ModAttribution.Find(stackTrace).ConvertAll(mod => (object)mod) },
-            });
+            hub.Publish(
+                "log",
+                new JsonObject
+                {
+                    { "level", type.ToString() },
+                    { "message", message },
+                    { "stack", stackTrace ?? "" },
+                    { "mods", ModAttribution.Find(stackTrace).ConvertAll(mod => (object)mod) },
+                }
+            );
         }
         catch (Exception)
         {

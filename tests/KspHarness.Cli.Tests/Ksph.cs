@@ -84,12 +84,15 @@ internal sealed class McpClient : IAsyncDisposable
     public static async Task<McpClient> StartAsync()
     {
         var client = new McpClient(Process.Start(Ksph.StartInfo("mcp"))!);
-        await client.RequestAsync("initialize", new JsonObject
-        {
-            ["protocolVersion"] = "2025-06-18",
-            ["capabilities"] = new JsonObject(),
-            ["clientInfo"] = new JsonObject { ["name"] = "tests", ["version"] = "1" },
-        });
+        await client.RequestAsync(
+            "initialize",
+            new JsonObject
+            {
+                ["protocolVersion"] = "2025-06-18",
+                ["capabilities"] = new JsonObject(),
+                ["clientInfo"] = new JsonObject { ["name"] = "tests", ["version"] = "1" },
+            }
+        );
         await client.NotifyAsync("notifications/initialized");
         return client;
     }
@@ -97,14 +100,21 @@ internal sealed class McpClient : IAsyncDisposable
     public async Task<JsonNode> RequestAsync(string method, JsonObject? parameters = null, TimeSpan? timeout = null)
     {
         var id = ++nextId;
-        var message = new JsonObject { ["jsonrpc"] = "2.0", ["id"] = id, ["method"] = method, ["params"] = parameters ?? new JsonObject() };
+        var message = new JsonObject
+        {
+            ["jsonrpc"] = "2.0",
+            ["id"] = id,
+            ["method"] = method,
+            ["params"] = parameters ?? new JsonObject(),
+        };
         await process.StandardInput.WriteLineAsync(message.ToJsonString());
         await process.StandardInput.FlushAsync();
 
         using var cancel = new CancellationTokenSource(timeout ?? TimeSpan.FromSeconds(60));
         while (true)
         {
-            var line = await process.StandardOutput.ReadLineAsync(cancel.Token)
+            var line =
+                await process.StandardOutput.ReadLineAsync(cancel.Token)
                 ?? throw new InvalidOperationException($"ksph mcp closed its output; stderr:\n{Errors}");
             var reply = JsonNode.Parse(line)!;
             if (reply["id"]?.GetValue<int>() != id)
@@ -123,7 +133,11 @@ internal sealed class McpClient : IAsyncDisposable
 
     public Task<JsonNode> CallAsync(string tool, JsonObject? arguments = null, TimeSpan? timeout = null)
     {
-        return RequestAsync("tools/call", new JsonObject { ["name"] = tool, ["arguments"] = arguments ?? new JsonObject() }, timeout);
+        return RequestAsync(
+            "tools/call",
+            new JsonObject { ["name"] = tool, ["arguments"] = arguments ?? new JsonObject() },
+            timeout
+        );
     }
 
     public async Task NotifyAsync(string method)
@@ -135,9 +149,13 @@ internal sealed class McpClient : IAsyncDisposable
 
     public static string TextOf(JsonNode result)
     {
-        return string.Join("\n", result["content"]!.AsArray()
-            .Where(c => c?["type"]?.GetValue<string>() == "text")
-            .Select(c => c!["text"]!.GetValue<string>()));
+        return string.Join(
+            "\n",
+            result["content"]!
+                .AsArray()
+                .Where(c => c?["type"]?.GetValue<string>() == "text")
+                .Select(c => c!["text"]!.GetValue<string>())
+        );
     }
 
     public async ValueTask DisposeAsync()

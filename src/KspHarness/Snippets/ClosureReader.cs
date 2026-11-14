@@ -43,7 +43,8 @@ internal static class ClosureReader
         HashSet<string> seen,
         List<CapturedVariable> result,
         string code,
-        SourcePosition position)
+        SourcePosition position
+    )
     {
         var outer = new List<object>();
         foreach (var field in closure.GetType().GetFields(InstanceFields))
@@ -84,7 +85,8 @@ internal static class ClosureReader
 
     private static void RejectThis(object instance, HashSet<string> used, string code, SourcePosition position)
     {
-        var members = instance.GetType()
+        var members = instance
+            .GetType()
             .GetMembers(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
             .Select(m => m.Name)
             .Where(used.Contains)
@@ -95,9 +97,10 @@ internal static class ClosureReader
             var named = members.Length > 0 ? $" ({string.Join(", ", members)})" : "";
             throw new SnippetCompileException(
                 $"the lambda uses this{named}, which can't be sent to the game. Copy the values it needs into local "
-                + "variables before Game.Run and use those.",
+                    + "variables before Game.Run and use those.",
                 position.File,
-                position.Line);
+                position.Line
+            );
         }
     }
 

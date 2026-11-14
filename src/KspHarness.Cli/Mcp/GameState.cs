@@ -25,7 +25,8 @@ internal sealed class GameState : IAsyncDisposable
         {
             throw new ToolException(
                 "the connection to the game closed (it quit or crashed, or another client attached): "
-                + "call game_status, then game_attach or game_launch");
+                    + "call game_status, then game_attach or game_launch"
+            );
         }
 
         return current;

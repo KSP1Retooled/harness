@@ -47,11 +47,12 @@ public sealed class CkanClient
         string[] names = OperatingSystem.IsWindows() ? ["ckan.exe"] : ["ckan", "ckan.exe"];
         string[] searchPath = (Environment.GetEnvironmentVariable("PATH") ?? "").Split(Path.PathSeparator);
         return names
-            .SelectMany(name => searchPath.Where(dir => dir.Length > 0).Select(dir => Path.Combine(dir, name)))
-            .FirstOrDefault(File.Exists)
+                .SelectMany(name => searchPath.Where(dir => dir.Length > 0).Select(dir => Path.Combine(dir, name)))
+                .FirstOrDefault(File.Exists)
             ?? throw new InstallException(
                 $"CKAN not found: set {EnvironmentVariable} or put {string.Join(" or ", names)} on the PATH "
-                + "(CKAN 1.36 or later)");
+                    + "(CKAN 1.36 or later)"
+            );
     }
 
     /// <summary>
@@ -117,7 +118,8 @@ public sealed class CkanClient
             }
 
             string identifier = source.GetProperty("identifier").GetString() ?? entry.Name;
-            string version = source.GetProperty("version").GetString()
+            string version =
+                source.GetProperty("version").GetString()
                 ?? throw new InstallException($"{registry}: {identifier} has no version");
             modules.Add(new LockedModule(identifier, version));
         }
@@ -225,8 +227,12 @@ public sealed class CkanClient
     /// its repository data and download cache are per user, and two runs at once (two builds of different instances)
     /// break each other's update or download.
     /// </summary>
-    internal static string UserLockPath => Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "KspHarness", "ckan.lock");
+    internal static string UserLockPath =>
+        Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "KspHarness",
+            "ckan.lock"
+        );
 
     private async Task<FileStream> AcquireUserLockAsync(StreamWriter log, CancellationToken cancel)
     {
@@ -262,8 +268,11 @@ public sealed class CkanClient
     {
         const int tailLines = 30;
         var lines = File.ReadAllLines(logPath);
-        int lastHeader = Array.FindLastIndex(lines, line => line.StartsWith("=== ", StringComparison.Ordinal)
-            && line.Contains(" ckan ", StringComparison.Ordinal));
+        int lastHeader = Array.FindLastIndex(
+            lines,
+            line =>
+                line.StartsWith("=== ", StringComparison.Ordinal) && line.Contains(" ckan ", StringComparison.Ordinal)
+        );
         var tail = lines.Skip(Math.Max(Math.Max(lastHeader, 0), lines.Length - tailLines));
         string message = $"ckan {command[0]} {what} for {gameDir}. Log: {logPath}\n" + string.Join('\n', tail);
         return new CkanException(message, logPath, exitCode);

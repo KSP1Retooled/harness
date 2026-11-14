@@ -16,11 +16,13 @@ public static class HarnessMod
     /// The mod's <c>GameData/KspHarness</c> folder next to this library. It is there when the library was built with
     /// <c>KSP_DIR</c> set.
     /// </summary>
-    public static string Folder { get; } = Path.Combine(
-        Path.GetDirectoryName(typeof(HarnessMod).Assembly.Location) ?? AppContext.BaseDirectory,
-        "mod",
-        "GameData",
-        FolderName);
+    public static string Folder { get; } =
+        Path.Combine(
+            Path.GetDirectoryName(typeof(HarnessMod).Assembly.Location) ?? AppContext.BaseDirectory,
+            "mod",
+            "GameData",
+            FolderName
+        );
 
     /// <summary>Copies the mod into the instance's GameData unless the same files are already there.</summary>
     public static bool DeployTo(Instance instance) => DeployTo(instance, Folder);
@@ -36,7 +38,8 @@ public static class HarnessMod
         {
             throw new FileNotFoundException(
                 $"the driver mod is not in {folder}; build KspHarness with KSP_DIR set to a stock KSP 1.12.5 install",
-                Path.Combine(folder, AssemblyRelativePath));
+                Path.Combine(folder, AssemblyRelativePath)
+            );
         }
 
         return instance.DeployMod(folder, AssemblyRelativePath);

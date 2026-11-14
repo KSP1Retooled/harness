@@ -33,7 +33,8 @@ public sealed partial class GameSession
     public async Task<IReadOnlyList<ClosedPopup>> DismissDialogsAsync(
         PopupPolicy? policy = null,
         TimeSpan? timeout = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         policy ??= Popups;
         var swept = await SweepAsync(policy, waitForMenu: false, timeout ?? TimeSpan.FromMinutes(1), cancellationToken);
@@ -43,8 +44,10 @@ public sealed partial class GameSession
     }
 
     // Waiting for the main menu is part of the sweep, so that a dialog that stops the loading screen is answered.
-    private async Task<IReadOnlyList<ClosedPopup>> WaitForMainMenuSweepingAsync(TimeSpan? timeout,
-        CancellationToken cancellationToken)
+    private async Task<IReadOnlyList<ClosedPopup>> WaitForMainMenuSweepingAsync(
+        TimeSpan? timeout,
+        CancellationToken cancellationToken
+    )
     {
         return await SweepAsync(Popups, waitForMenu: true, timeout ?? DefaultSceneTimeout, cancellationToken);
     }
@@ -53,7 +56,8 @@ public sealed partial class GameSession
         PopupPolicy policy,
         bool waitForMenu,
         TimeSpan timeout,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         var rules = policy.Dialogs.SelectMany(rule => new[] { rule.Dialog, rule.Button ?? "" }).ToArray();
         object?[] arguments =
@@ -70,10 +74,14 @@ public sealed partial class GameSession
         var report = await RunWithArguments<string[]>(
             snippet.Source,
             arguments,
-            RunOptions.Default with { RealTimeout = timeout },
+            RunOptions.Default with
+            {
+                RealTimeout = timeout,
+            },
             cancellationToken,
             snippet.File,
-            snippet.Line);
+            snippet.Line
+        );
 
         var closed = new List<ClosedPopup>();
         for (var i = 0; i + 2 < report.Length; i += 3)
@@ -85,8 +93,10 @@ public sealed partial class GameSession
         return closed;
     }
 
-    private async Task<IReadOnlyList<ClosedPopup>> RunClosersAsync(PopupPolicy policy,
-        CancellationToken cancellationToken)
+    private async Task<IReadOnlyList<ClosedPopup>> RunClosersAsync(
+        PopupPolicy policy,
+        CancellationToken cancellationToken
+    )
     {
         if (!policy.AnswerOthers || policy.Closers.Count == 0)
         {
@@ -94,13 +104,22 @@ public sealed partial class GameSession
         }
 
         // A closer names the mod's types, so it compiles only where the mod is loaded; ask once per session.
-        var unknown = policy.Closers.Select(closer => closer.Assembly).Where(name => !loadedAssemblies.ContainsKey(name))
-            .Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+        var unknown = policy
+            .Closers.Select(closer => closer.Assembly)
+            .Where(name => !loadedAssemblies.ContainsKey(name))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
         if (unknown.Length > 0)
         {
             var snippet = PopupSnippets.LoadedAssemblies;
-            var loaded = await RunWithArguments<string[]>(snippet.Source, [unknown], RunOptions.Default,
-                cancellationToken, snippet.File, snippet.Line);
+            var loaded = await RunWithArguments<string[]>(
+                snippet.Source,
+                [unknown],
+                RunOptions.Default,
+                cancellationToken,
+                snippet.File,
+                snippet.Line
+            );
             foreach (var name in unknown)
             {
                 loadedAssemblies[name] = loaded.Contains(name, StringComparer.OrdinalIgnoreCase);

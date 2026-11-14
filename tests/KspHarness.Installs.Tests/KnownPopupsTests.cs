@@ -49,7 +49,9 @@ public sealed class KnownPopupsTests
     public void Unknown_popups_and_answers_are_rejected()
     {
         Assert.Throws<ArgumentException>(() => new InstallBuilder().AnswerPopup("Nope.Popup", "yes"));
-        Assert.Throws<ArgumentException>(() => new InstallBuilder().AnswerPopup(KnownPopups.KspcfTextureCache, "maybe"));
+        Assert.Throws<ArgumentException>(() =>
+            new InstallBuilder().AnswerPopup(KnownPopups.KspcfTextureCache, "maybe")
+        );
     }
 
     [Fact]
@@ -66,8 +68,10 @@ public sealed class KnownPopupsTests
 
         Assert.Contains("KSPCommunityFixes.TextureCache=yes", applied);
         Assert.DoesNotContain(applied, entry => entry.StartsWith(KnownPopups.ToolbarControllerIntro));
-        Assert.Equal("userOptInChoiceDone = True\r\ntextureCacheEnabled = True\r\n",
-            File.ReadAllText(Path.Combine(game, KspcfFile)));
+        Assert.Equal(
+            "userOptInChoiceDone = True\r\ntextureCacheEnabled = True\r\n",
+            File.ReadAllText(Path.Combine(game, KspcfFile))
+        );
         Assert.False(Directory.Exists(Path.Combine(game, "GameData/001_ToolbarControl")));
 
         var settings = SettingsFile.ReadTopLevel(Path.Combine(game, "settings.cfg"));
@@ -83,7 +87,10 @@ public sealed class KnownPopupsTests
         string startRoot = FakeInstall.Create(dir);
         File.WriteAllText(Path.Combine(startRoot, "settings.cfg"), "SETTINGS_FILE_VERSION = 1.12.5\nUI_SCALE = 1\n");
         Directory.CreateDirectory(Path.Combine(startRoot, "GameData/KSPCommunityFixes/Plugins"));
-        File.WriteAllText(Path.Combine(startRoot, "GameData/KSPCommunityFixes/Plugins/KSPCommunityFixes.dll"), "plugin");
+        File.WriteAllText(
+            Path.Combine(startRoot, "GameData/KSPCommunityFixes/Plugins/KSPCommunityFixes.dll"),
+            "plugin"
+        );
         var start = StartingInstall.Open(startRoot);
         var home = new HarnessHome(dir.Combine("home"));
 

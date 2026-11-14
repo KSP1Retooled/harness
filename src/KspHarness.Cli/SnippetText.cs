@@ -51,7 +51,8 @@ internal sealed partial class SnippetText
     /// <summary>
     /// The last top-level statement is a <c>return</c> or <c>throw</c>, so typed input can run without a blank line.
     /// </summary>
-    public bool EndsWithExit => Shape == SnippetShape.Statements
+    public bool EndsWithExit =>
+        Shape == SnippetShape.Statements
         && Block(Body).Statements.LastOrDefault() is ReturnStatementSyntax or ThrowStatementSyntax;
 
     /// <summary>For an expression, where <c>return </c> goes: 1-based line and column of its first character.</summary>
@@ -98,7 +99,10 @@ internal sealed partial class SnippetText
     {
         var (line, column) = WrapPosition;
         return error.Line == line && error.Column >= column + ReturnPrefix.Length
-            ? error with { Column = error.Column - ReturnPrefix.Length }
+            ? error with
+            {
+                Column = error.Column - ReturnPrefix.Length,
+            }
             : error;
     }
 
@@ -114,7 +118,11 @@ internal sealed partial class SnippetText
         var text = "{" + body + "\n}";
         var block = SyntaxFactory.ParseStatement(text, options: ParseOptions);
         var end = text.Length - 2;
-        if (block.GetDiagnostics().Any(d => d.Severity == DiagnosticSeverity.Error && d.Location.SourceSpan.Start >= end))
+        if (
+            block
+                .GetDiagnostics()
+                .Any(d => d.Severity == DiagnosticSeverity.Error && d.Location.SourceSpan.Start >= end)
+        )
         {
             return SnippetShape.Incomplete;
         }

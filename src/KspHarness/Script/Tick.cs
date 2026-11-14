@@ -20,9 +20,7 @@ public static class Tick
 /// <summary>What the mod's waits return; it is its own awaiter.</summary>
 public class ScriptAwaitable : ICriticalNotifyCompletion
 {
-    private protected ScriptAwaitable()
-    {
-    }
+    private protected ScriptAwaitable() { }
 
     public bool IsCompleted => throw OutsideGame.Error();
 
@@ -37,9 +35,7 @@ public class ScriptAwaitable : ICriticalNotifyCompletion
 
 public class ScriptAwaitable<T> : ScriptAwaitable
 {
-    private protected ScriptAwaitable()
-    {
-    }
+    private protected ScriptAwaitable() { }
 
     public new ScriptAwaitable<T> GetAwaiter() => throw OutsideGame.Error();
 

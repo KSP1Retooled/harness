@@ -32,7 +32,8 @@ public sealed class SnippetException : GameRpcException
             RpcErrorCodes.SnippetThrew,
             Describe(data),
             data,
-            data?["inner"] is JsonObject inner ? new SnippetException(inner) : null)
+            data?["inner"] is JsonObject inner ? new SnippetException(inner) : null
+        )
     {
         GameType = data?["type"]?.GetValue<string>() ?? "System.Exception";
         GameMessage = data?["message"]?.GetValue<string>() ?? "";
@@ -47,8 +48,8 @@ public sealed class SnippetException : GameRpcException
     /// <summary>The stack trace in the game; snippet frames point at the test's source lines where Mono can.</summary>
     public string GameStackTrace { get; }
 
-    public override string StackTrace => GameStackTrace + Environment.NewLine + "--- in the driver ---"
-        + Environment.NewLine + base.StackTrace;
+    public override string StackTrace =>
+        GameStackTrace + Environment.NewLine + "--- in the driver ---" + Environment.NewLine + base.StackTrace;
 
     private static string Describe(JsonNode? data)
     {
@@ -62,18 +63,14 @@ public sealed class SnippetException : GameRpcException
 public sealed class GameConnectionLostException : IOException
 {
     public GameConnectionLostException(string message, Exception? inner = null)
-        : base(message, inner)
-    {
-    }
+        : base(message, inner) { }
 }
 
 /// <summary>The game process exited before it accepted the driver's connection.</summary>
 public sealed class GameExitedException : Exception
 {
     public GameExitedException(string message)
-        : base(message)
-    {
-    }
+        : base(message) { }
 }
 
 internal static class RpcErrorCodes

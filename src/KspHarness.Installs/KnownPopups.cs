@@ -17,7 +17,8 @@ public sealed class KnownPopup
         IReadOnlyList<string> answers,
         Func<string, bool> isPresent,
         Action<string, string, StartingInstall> write,
-        Action<string> remove)
+        Action<string> remove
+    )
     {
         Id = id;
         Description = description;
@@ -95,8 +96,8 @@ public static class KnownPopups
             ["hide"],
             _ => true,
             (dir, _, _) => SetSettings(dir, PrivacyKeys.Select(key => KeyValuePair.Create(key, "False"))),
-            dir => RemoveSettings(dir, PrivacyKeys)),
-
+            dir => RemoveSettings(dir, PrivacyKeys)
+        ),
         // What's New shows unless it is switched off and the running version is listed as shown. The expansion
         // adverts are switched off with it, because MainMenu offers them only once What's New is off.
         new KnownPopup(
@@ -104,25 +105,32 @@ public static class KnownPopups
             "stock KSP's What's New window and expansion adverts on the main menu",
             ["hide"],
             _ => true,
-            (dir, _, start) => SetSettings(dir,
-            [
-                KeyValuePair.Create("SHOW_WHATSNEW_DIALOG", "False"),
-                KeyValuePair.Create("SHOW_WHATSNEW_DIALOG_VersionsShown", start.KspVersion ?? "1.12.5"),
-                KeyValuePair.Create("MISSION_SHOW_EXPANSION_INFO", "False"),
-                KeyValuePair.Create("SERENITY_SHOW_EXPANSION_INFO", "False"),
-            ]),
-            dir => RemoveSettings(dir, WhatsNewKeys)),
-
+            (dir, _, start) =>
+                SetSettings(
+                    dir,
+                    [
+                        KeyValuePair.Create("SHOW_WHATSNEW_DIALOG", "False"),
+                        KeyValuePair.Create("SHOW_WHATSNEW_DIALOG_VersionsShown", start.KspVersion ?? "1.12.5"),
+                        KeyValuePair.Create("MISSION_SHOW_EXPANSION_INFO", "False"),
+                        KeyValuePair.Create("SERENITY_SHOW_EXPANSION_INFO", "False"),
+                    ]
+                ),
+            dir => RemoveSettings(dir, WhatsNewKeys)
+        ),
         // The file KSPCommunityFixes writes when the question is answered (KSPCFFastLoader.SetOptIn).
         new KnownPopup(
             KspcfTextureCache,
             "KSPCommunityFixes' PNG texture cache question while loading",
             ["yes", "no"],
             dir => File.Exists(Path.Combine(dir, KspcfFolder, "Plugins", "KSPCommunityFixes.dll")),
-            (dir, answer, _) => WriteFile(dir, KspcfFolder + "/PluginData/PNGTextureCache.cfg",
-                $"userOptInChoiceDone = True\ntextureCacheEnabled = {(answer == "yes" ? "True" : "False")}\n"),
-            dir => DeleteFile(dir, KspcfFolder + "/PluginData/PNGTextureCache.cfg")),
-
+            (dir, answer, _) =>
+                WriteFile(
+                    dir,
+                    KspcfFolder + "/PluginData/PNGTextureCache.cfg",
+                    $"userOptInChoiceDone = True\ntextureCacheEnabled = {(answer == "yes" ? "True" : "False")}\n"
+                ),
+            dir => DeleteFile(dir, KspcfFolder + "/PluginData/PNGTextureCache.cfg")
+        ),
         // ToolbarControl.LoadData reads showWindowAtStartup from this file; the mods' toolbar entries it also keeps
         // there are added back as each mod registers.
         new KnownPopup(
@@ -130,10 +138,14 @@ public static class KnownPopups
             "Toolbar Controller's intro window at the space center",
             ["hide"],
             dir => File.Exists(Path.Combine(dir, ToolbarFolder, "Plugins", "ToolbarControl.dll")),
-            (dir, _, _) => WriteFile(dir, ToolbarFolder + "/PluginData/ToolbarControl.cfg",
-                "ToolbarControlData\n{\n\tshowWindowAtStartup = False\n}\n"),
-            dir => DeleteFile(dir, ToolbarFolder + "/PluginData/ToolbarControl.cfg")),
-
+            (dir, _, _) =>
+                WriteFile(
+                    dir,
+                    ToolbarFolder + "/PluginData/ToolbarControl.cfg",
+                    "ToolbarControlData\n{\n\tshowWindowAtStartup = False\n}\n"
+                ),
+            dir => DeleteFile(dir, ToolbarFolder + "/PluginData/ToolbarControl.cfg")
+        ),
         // The global default its "Save as global default" button writes: with it, every new game takes the focus
         // model from the file and does not ask. "mouse" is the mod's own default.
         new KnownPopup(
@@ -141,23 +153,33 @@ public static class KnownPopups
             "Click Through Blocker's focus model window in each new game",
             ["mouse", "click"],
             dir => File.Exists(Path.Combine(dir, CtbFolder, "Plugins", "ClickThroughBlocker.dll")),
-            (dir, answer, _) => WriteFile(dir, CtbFolder + "/Global.cfg",
-                $"focusFollowsClick = {(answer == "click" ? "True" : "False")}\nuniversalClickBlocking = False\n"),
-            dir => DeleteFile(dir, CtbFolder + "/Global.cfg")),
+            (dir, answer, _) =>
+                WriteFile(
+                    dir,
+                    CtbFolder + "/Global.cfg",
+                    $"focusFollowsClick = {(answer == "click" ? "True" : "False")}\nuniversalClickBlocking = False\n"
+                ),
+            dir => DeleteFile(dir, CtbFolder + "/Global.cfg")
+        ),
     ];
 
     public static KnownPopup Get(string id)
     {
         return All.FirstOrDefault(popup => string.Equals(popup.Id, id, StringComparison.OrdinalIgnoreCase))
             ?? throw new ArgumentException(
-                $"no known popup '{id}'; known: {string.Join(", ", All.Select(popup => popup.Id))}", nameof(id));
+                $"no known popup '{id}'; known: {string.Join(", ", All.Select(popup => popup.Id))}",
+                nameof(id)
+            );
     }
 
     /// <summary>
     /// Writes each present popup's answer, or removes it where <paramref name="answers"/> maps the popup to null.
     /// </summary>
-    internal static IReadOnlyList<string> Apply(string gameDir, IReadOnlyDictionary<string, string?> answers,
-        StartingInstall start)
+    internal static IReadOnlyList<string> Apply(
+        string gameDir,
+        IReadOnlyDictionary<string, string?> answers,
+        StartingInstall start
+    )
     {
         var applied = new List<string>();
         foreach (var popup in All.Where(popup => popup.IsPresent(gameDir)))

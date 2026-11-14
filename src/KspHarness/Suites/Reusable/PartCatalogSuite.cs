@@ -57,7 +57,9 @@ public abstract class PartCatalogSuite<TInstall> : KspSuite<TInstall>
         var cursor = Game.Log.Cursor;
         foreach (var batch in names.Chunk(BatchSize))
         {
-            results.AddRange(await this.RunAsync<List<PartCheck>>(SpawnSnippet, [batch, RootPart], TimeSpan.FromMinutes(5)));
+            results.AddRange(
+                await this.RunAsync<List<PartCheck>>(SpawnSnippet, [batch, RootPart], TimeSpan.FromMinutes(5))
+            );
         }
 
         var seconds = clock.Elapsed.TotalSeconds;
@@ -69,8 +71,10 @@ public abstract class PartCatalogSuite<TInstall> : KspSuite<TInstall>
         // The snippet hears every message the game logs while a part is held; the driver's log adds which mods are on
         // each stack, for the report.
         var modErrors = ModErrors(cursor);
-        Evidence.Note($"{results.Count} parts in {seconds:0.0} s ({results.Count / Math.Max(seconds, 0.001):0} per second), "
-            + $"{failures.Count} with problems, {modErrors.Count} errors through mod code");
+        Evidence.Note(
+            $"{results.Count} parts in {seconds:0.0} s ({results.Count / Math.Max(seconds, 0.001):0} per second), "
+                + $"{failures.Count} with problems, {modErrors.Count} errors through mod code"
+        );
         Evidence.Write("parts.txt", Table(results, known));
         if (modErrors.Count > 0)
         {
@@ -79,7 +83,8 @@ public abstract class PartCatalogSuite<TInstall> : KspSuite<TInstall>
 
         Check.Empty(
             failures.Select(item => $"{item.Result.Name} ({item.Result.Folder}): {string.Join("; ", item.Problems)}"),
-            "parts that failed in the editor");
+            "parts that failed in the editor"
+        );
     }
 
     private static List<string> Problems(PartCheck result, IReadOnlyList<Regex> known)
@@ -94,9 +99,9 @@ public abstract class PartCatalogSuite<TInstall> : KspSuite<TInstall>
             problems.Add("its modules did not finish starting (Part.editorStarted is false)");
         }
 
-        problems.AddRange(result.Errors
-            .Where(error => !known.Any(regex => regex.IsMatch(error)))
-            .Select(SuiteSnippets.FirstLine));
+        problems.AddRange(
+            result.Errors.Where(error => !known.Any(regex => regex.IsMatch(error))).Select(SuiteSnippets.FirstLine)
+        );
         return problems;
     }
 
@@ -108,8 +113,14 @@ public abstract class PartCatalogSuite<TInstall> : KspSuite<TInstall>
         {
             var problems = Problems(result, known);
             var accepted = result.Errors.Count(error => known.Any(regex => regex.IsMatch(error)));
-            text.Append(result.Name).Append('\t').Append(result.Folder).Append('\t').Append(result.Modules).Append('\t')
-                .Append(result.Started ? "yes" : "no").Append('\t')
+            text.Append(result.Name)
+                .Append('\t')
+                .Append(result.Folder)
+                .Append('\t')
+                .Append(result.Modules)
+                .Append('\t')
+                .Append(result.Started ? "yes" : "no")
+                .Append('\t')
                 .Append(problems.Count == 0 ? "ok" : string.Join(" | ", problems))
                 .Append(accepted > 0 ? $" ({accepted} known errors)" : "")
                 .AppendLine();
@@ -124,7 +135,8 @@ public abstract class PartCatalogSuite<TInstall> : KspSuite<TInstall>
         int Modules,
         bool Started,
         string? Failure,
-        List<string> Errors);
+        List<string> Errors
+    );
 
     private static readonly LibrarySnippet OpenEditorSnippet = LibrarySnippet.Define(
         """
@@ -133,7 +145,8 @@ public abstract class PartCatalogSuite<TInstall> : KspSuite<TInstall>
         await Wait.Scene(GameScenes.EDITOR);
         await Wait.Until(() => EditorLogic.fetch != null && EditorLogic.fetch.fsm != null && EditorLogic.fetch.fsm.Started);
         return null;
-        """);
+        """
+    );
 
     private static readonly LibrarySnippet PartNamesSnippet = LibrarySnippet.Define(
         """
@@ -141,7 +154,8 @@ public abstract class PartCatalogSuite<TInstall> : KspSuite<TInstall>
             .Where(part => part.category != PartCategories.none && part.partPrefab != null)
             .Select(part => part.name)
             .ToList();
-        """);
+        """
+    );
 
     // Each part is picked up at the end of a frame, so that Unity runs its Start (and with it every module's OnStart)
     // before the next Update, where it is checked and deleted; its OnDestroy has run by the end of that frame, so every
@@ -251,5 +265,6 @@ public abstract class PartCatalogSuite<TInstall> : KspSuite<TInstall>
         }
 
         return results;
-        """);
+        """
+    );
 }

@@ -9,7 +9,8 @@ internal static class LibrarySnippets
     public static readonly LibrarySnippet WaitForMainMenu = LibrarySnippet.Define(
         """
         await Wait.Scene(GameScenes.MAINMENU);
-        """);
+        """
+    );
 
     // Follows the main menu's own path through New Game > Sandbox > Start: the dialog must exist, because
     // ConfirmNewGame dismisses it. An existing save of that name is replaced, as the overwrite prompt's "yes" would.
@@ -61,7 +62,8 @@ internal static class LibrarySnippets
 
         GamePersistence.SaveGame("persistent", HighLogic.SaveFolder, SaveMode.OVERWRITE);
         await Wait.Until(() => Object.FindObjectsOfType<ScenarioNewGameIntro>().Length == 0);
-        """);
+        """
+    );
 
     // Follows the space center's launch with the craft's default crew, and returns once the vessel is unpacked. A
     // craft name is looked up in the save's Ships folder and then the install's, under the site's facility first.
@@ -121,7 +123,8 @@ internal static class LibrarySnippets
         }
 
         await Wait.Scene(GameScenes.FLIGHT);
-        """);
+        """
+    );
 
     // Follows the main menu's Resume Game (and, for a save made in flight, the quickload path): the file goes through
     // the upgrade pipeline first, whose callbacks may come later, then the game starts in the scene it was saved in.
@@ -166,7 +169,8 @@ internal static class LibrarySnippets
         {
             await Wait.Until(() => FlightGlobals.ActiveVessel != null && !FlightGlobals.ActiveVessel.packed);
         }
-        """);
+        """
+    );
 
     // Saves as the quicksave key does, minus the screen message, so that a save made in flight resumes there.
     public static readonly LibrarySnippet QuickSave = LibrarySnippet.Define(
@@ -189,18 +193,21 @@ internal static class LibrarySnippets
         {
             throw new InvalidOperationException("the game did not write the save " + name);
         }
-        """);
+        """
+    );
 
     // The live database queries take the query as an argument, so that one assembly serves every query.
     public static readonly LibrarySnippet DatabaseQuery = LibrarySnippet.Define(
         """
         return Database.Query(Args.Get<string>(__args, 0));
-        """);
+        """
+    );
 
     public static readonly LibrarySnippet DatabaseValues = LibrarySnippet.Define(
         """
         return Database.Values(Args.Get<string>(__args, 0));
-        """);
+        """
+    );
 
     // Leaves without saving: a test's game is scratch.
     public static readonly LibrarySnippet ReturnToMainMenu = LibrarySnippet.Define(
@@ -211,5 +218,6 @@ internal static class LibrarySnippets
         }
 
         await Wait.Scene(GameScenes.MAINMENU);
-        """);
+        """
+    );
 }

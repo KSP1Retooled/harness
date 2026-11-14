@@ -57,7 +57,8 @@ public abstract class ToolbarSweepSuite<TInstall> : KspSuite<TInstall>
             EditorDriver.StartEditor(EditorFacility.VAB);
             await Wait.Scene(GameScenes.EDITOR);
             """,
-            cancellationToken: Cancel);
+            cancellationToken: Cancel
+        );
         await SweepAsync("EDITOR");
     }
 
@@ -82,13 +83,19 @@ public abstract class ToolbarSweepSuite<TInstall> : KspSuite<TInstall>
         var failures = new List<string>();
         var fromGame = buttons.Where(button => !button.IsMod).Select(button => button.Id).ToList();
         var modButtons = buttons.Where(button => button.IsMod).ToList();
-        Evidence.Note($"{scene}: {modButtons.Count} mod buttons"
-            + (fromGame.Count > 0
-                ? $"; skipped {fromGame.Count} added by the game itself: {string.Join(", ", fromGame)}"
-                : ""));
+        Evidence.Note(
+            $"{scene}: {modButtons.Count} mod buttons"
+                + (
+                    fromGame.Count > 0
+                        ? $"; skipped {fromGame.Count} added by the game itself: {string.Join(", ", fromGame)}"
+                        : ""
+                )
+        );
         if (modButtons.Count < MinimumModButtons)
         {
-            failures.Add($"{scene}: {modButtons.Count} mod buttons on the app launcher, expected at least {MinimumModButtons}");
+            failures.Add(
+                $"{scene}: {modButtons.Count} mod buttons on the app launcher, expected at least {MinimumModButtons}"
+            );
         }
 
         // The report is written however the sweep ends, so the buttons checked before a failure keep their lines.
@@ -98,7 +105,9 @@ public abstract class ToolbarSweepSuite<TInstall> : KspSuite<TInstall>
             foreach (var button in modButtons)
             {
                 number++;
-                var problems = Matches(SkippedButtons, button) ? null : await CheckButtonAsync(scene, number, button, report);
+                var problems = Matches(SkippedButtons, button)
+                    ? null
+                    : await CheckButtonAsync(scene, number, button, report);
                 if (problems is null)
                 {
                     report.AppendLine($"{button.Id} [{button.Owner}]: skipped");
@@ -133,8 +142,10 @@ public abstract class ToolbarSweepSuite<TInstall> : KspSuite<TInstall>
             // One button that breaks the check (a click handler that throws into the snippet, a snippet timeout) is
             // that button's problem; the sweep goes on with the next.
             problems.Add($"the check threw {e.GetType().Name}: {SuiteSnippets.FirstLine(e.Message)}");
-            report.AppendLine($"{button.Id} [{button.Owner}] \"{button.Label}\": {ModErrors(cursor).Count} mod errors"
-                + $" -- {string.Join("; ", problems)}");
+            report.AppendLine(
+                $"{button.Id} [{button.Owner}] \"{button.Label}\": {ModErrors(cursor).Count} mod errors"
+                    + $" -- {string.Join("; ", problems)}"
+            );
             return problems;
         }
 
@@ -143,7 +154,9 @@ public abstract class ToolbarSweepSuite<TInstall> : KspSuite<TInstall>
         // An owner that is not an assembly name cannot be matched to an error's stack, so every mod error logged during
         // the click counts against the button.
         var own = button.OwnerIsAssembly
-            ? errors.Where(e => e.Mods.Any(mod => mod.StartsWith(button.Owner + "@", StringComparison.Ordinal))).ToList()
+            ? errors
+                .Where(e => e.Mods.Any(mod => mod.StartsWith(button.Owner + "@", StringComparison.Ordinal)))
+                .ToList()
             : errors.ToList();
 
         var shot = $"{scene.ToLowerInvariant()}-{number:00}-{Safe(button.Id)}.png";
@@ -165,8 +178,10 @@ public abstract class ToolbarSweepSuite<TInstall> : KspSuite<TInstall>
 
             if (check.UguiLeft > 0)
             {
-                problems.Add($"{check.UguiLeft} uGUI objects stayed after the second click "
-                    + $"({string.Join(", ", check.UguiLeftPaths)})");
+                problems.Add(
+                    $"{check.UguiLeft} uGUI objects stayed after the second click "
+                        + $"({string.Join(", ", check.UguiLeftPaths)})"
+                );
             }
 
             if (check.UguiOpened == 0 && check.PixelsOpened >= OpenedPixelFraction && check.PixelsClosed >= 0.5)
@@ -197,7 +212,8 @@ public abstract class ToolbarSweepSuite<TInstall> : KspSuite<TInstall>
         }
 
         var owner = button.OwnerIsAssembly ? button.Owner : $"{button.Owner}, not an assembly name";
-        var line = $"{button.Id} [{owner}] \"{button.Label}\": uGUI +{check.UguiOpened}, "
+        var line =
+            $"{button.Id} [{owner}] \"{button.Label}\": uGUI +{check.UguiOpened}, "
             + $"pixels {check.PixelsOpened:P2} "
             + $"open, {check.PixelsClosed:P0} of those left after closing (noise {check.Noise:P2}), "
             + $"{errors.Count} mod errors, {check.Seconds:0.0} s, {shot}"
@@ -236,15 +252,15 @@ public abstract class ToolbarSweepSuite<TInstall> : KspSuite<TInstall>
         string? Note,
         double Seconds,
         byte[]? OpenShot,
-        byte[]? ClosedShot);
+        byte[]? ClosedShot
+    );
 
     // Shared by both snippets: every active mod button on the stock launcher with an id that stays the same across
     // scenes and runs, and the mod that owns it. A ToolbarControl button's callbacks belong to ToolbarControl, so its
     // owner comes from the ToolbarControl object that made it. Buttons that would share an id (one handler for several
     // buttons) get "#2", "#3" in launcher order. Mods add their buttons from onGUIApplicationLauncherReady, some of them
     // a few frames later, so the list is taken a little after the launcher is ready.
-    private const string Identify =
-        """
+    private const string Identify = """
         await Wait.Until(() => ApplicationLauncher.Ready && ApplicationLauncher.Instance != null);
         await Wait.Frames(10);
         var flags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public
@@ -375,185 +391,190 @@ public abstract class ToolbarSweepSuite<TInstall> : KspSuite<TInstall>
         }
 
         return dismissed;
-        """);
-
-    private static readonly LibrarySnippet ListSnippet = LibrarySnippet.Define(Identify +
         """
-        return found.Select(entry => new { entry.Id, entry.Owner, entry.Label, entry.IsMod, entry.OwnerIsAssembly }).ToList();
-        """);
+    );
 
-    private static readonly LibrarySnippet CheckSnippet = LibrarySnippet.Define(Identify +
-        """
-        string wanted = Args.Get<string>(__args, 0);
-        var clock = System.Diagnostics.Stopwatch.StartNew();
-        var matches = found.Where(entry => entry.Id == wanted).ToList();
-        if (matches.Count != 1)
-        {
-            throw new InvalidOperationException(matches.Count + " active launcher buttons have the id " + wanted);
-        }
+    private static readonly LibrarySnippet ListSnippet = LibrarySnippet.Define(
+        Identify
+            + """
+            return found.Select(entry => new { entry.Id, entry.Owner, entry.Label, entry.IsMod, entry.OwnerIsAssembly }).ToList();
+            """
+    );
 
-        var target = matches[0].Button;
-        var toggle = target.toggleButton;
-        if (toggle.CurrentState == KSP.UI.UIRadioButton.State.True)
-        {
-            target.SetFalse(true);
-        }
-
-        // The launcher's own buttons and screen messages change on their own; neither is a window.
-        var launcher = ApplicationLauncher.Instance.transform;
-        var messages = ScreenMessages.Instance != null ? ScreenMessages.Instance.transform : null;
-        Func<Dictionary<int, RectTransform>> ugui = () => Object.FindObjectsOfType<RectTransform>()
-            .Where(rect => !rect.IsChildOf(launcher) && (messages == null || !rect.IsChildOf(messages)))
-            .ToDictionary(rect => rect.GetInstanceID());
-
-        // Screen pixels of the button, padded, so its own highlight does not count as a window.
-        var corners = new Vector3[4];
-        ((RectTransform)target.transform).GetWorldCorners(corners);
-        var camera = KSP.UI.UIMasterController.Instance.uiCamera;
-        var low = RectTransformUtility.WorldToScreenPoint(camera, corners[0]);
-        var high = RectTransformUtility.WorldToScreenPoint(camera, corners[2]);
-        var buttonRect = Rect.MinMaxRect(low.x - 12, low.y - 12, high.x + 12, high.y + 12);
-
-        byte[] openPng = null;
-        byte[] lastPng = null;
-        int width = 0;
-        async Task<Color32[]> Shot(bool keep)
-        {
-            byte[] png = await Screenshot.Capture();
-            var texture = new Texture2D(2, 2);
-            texture.LoadImage(png);
-            width = texture.width;
-            var pixels = texture.GetPixels32();
-            Object.Destroy(texture);
-            if (keep)
+    private static readonly LibrarySnippet CheckSnippet = LibrarySnippet.Define(
+        Identify
+            + """
+            string wanted = Args.Get<string>(__args, 0);
+            var clock = System.Diagnostics.Stopwatch.StartNew();
+            var matches = found.Where(entry => entry.Id == wanted).ToList();
+            if (matches.Count != 1)
             {
-                openPng = png;
+                throw new InvalidOperationException(matches.Count + " active launcher buttons have the id " + wanted);
             }
 
-            lastPng = png;
-
-            return pixels;
-        }
-
-        bool Differs(Color32 a, Color32 b) => Math.Abs(a.r - b.r) > 24 || Math.Abs(a.g - b.g) > 24 || Math.Abs(a.b - b.b) > 24;
-
-        await Wait.Frames(5);
-        var before = new HashSet<string>(InputLockManager.lockStack.Keys);
-        var first = await Shot(false);
-        await Wait.Frames(8);
-        var second = await Shot(false);
-        await Wait.Frames(8);
-        var third = await Shot(false);
-
-        int height = third.Length / width;
-        int blocksX = (width + 15) / 16;
-        var noisy = new bool[blocksX * ((height + 15) / 16)];
-        int noisePixels = 0;
-        for (int i = 0; i < third.Length; i++)
-        {
-            if (Differs(first[i], third[i]) || Differs(second[i], third[i]))
+            var target = matches[0].Button;
+            var toggle = target.toggleButton;
+            if (toggle.CurrentState == KSP.UI.UIRadioButton.State.True)
             {
-                noisy[(i / width / 16) * blocksX + (i % width) / 16] = true;
-                noisePixels++;
+                target.SetFalse(true);
             }
-        }
 
-        // Pixels the click changed, outside noisy blocks and the button; the window, if one opened.
-        var window = new bool[third.Length];
-        double Changed(Color32[] after)
-        {
-            int changed = 0;
-            int compared = 0;
-            for (int i = 0; i < third.Length; i++)
+            // The launcher's own buttons and screen messages change on their own; neither is a window.
+            var launcher = ApplicationLauncher.Instance.transform;
+            var messages = ScreenMessages.Instance != null ? ScreenMessages.Instance.transform : null;
+            Func<Dictionary<int, RectTransform>> ugui = () => Object.FindObjectsOfType<RectTransform>()
+                .Where(rect => !rect.IsChildOf(launcher) && (messages == null || !rect.IsChildOf(messages)))
+                .ToDictionary(rect => rect.GetInstanceID());
+
+            // Screen pixels of the button, padded, so its own highlight does not count as a window.
+            var corners = new Vector3[4];
+            ((RectTransform)target.transform).GetWorldCorners(corners);
+            var camera = KSP.UI.UIMasterController.Instance.uiCamera;
+            var low = RectTransformUtility.WorldToScreenPoint(camera, corners[0]);
+            var high = RectTransformUtility.WorldToScreenPoint(camera, corners[2]);
+            var buttonRect = Rect.MinMaxRect(low.x - 12, low.y - 12, high.x + 12, high.y + 12);
+
+            byte[] openPng = null;
+            byte[] lastPng = null;
+            int width = 0;
+            async Task<Color32[]> Shot(bool keep)
             {
-                int x = i % width;
-                int y = i / width;
-                if (noisy[(y / 16) * blocksX + x / 16] || buttonRect.Contains(new Vector2(x, y)))
+                byte[] png = await Screenshot.Capture();
+                var texture = new Texture2D(2, 2);
+                texture.LoadImage(png);
+                width = texture.width;
+                var pixels = texture.GetPixels32();
+                Object.Destroy(texture);
+                if (keep)
                 {
-                    continue;
+                    openPng = png;
                 }
 
-                compared++;
-                if (Differs(third[i], after[i]))
+                lastPng = png;
+
+                return pixels;
+            }
+
+            bool Differs(Color32 a, Color32 b) => Math.Abs(a.r - b.r) > 24 || Math.Abs(a.g - b.g) > 24 || Math.Abs(a.b - b.b) > 24;
+
+            await Wait.Frames(5);
+            var before = new HashSet<string>(InputLockManager.lockStack.Keys);
+            var first = await Shot(false);
+            await Wait.Frames(8);
+            var second = await Shot(false);
+            await Wait.Frames(8);
+            var third = await Shot(false);
+
+            int height = third.Length / width;
+            int blocksX = (width + 15) / 16;
+            var noisy = new bool[blocksX * ((height + 15) / 16)];
+            int noisePixels = 0;
+            for (int i = 0; i < third.Length; i++)
+            {
+                if (Differs(first[i], third[i]) || Differs(second[i], third[i]))
                 {
-                    window[i] = true;
-                    changed++;
+                    noisy[(i / width / 16) * blocksX + (i % width) / 16] = true;
+                    noisePixels++;
                 }
             }
 
-            return compared == 0 ? 0 : (double)changed / compared;
-        }
-
-        // The share of the window's pixels that still differ from before the click. Counting only those keeps a
-        // dialog that fades in elsewhere meanwhile from looking like a window left open.
-        double Remaining(Color32[] after)
-        {
-            int inWindow = 0;
-            int remaining = 0;
-            for (int i = 0; i < third.Length; i++)
+            // Pixels the click changed, outside noisy blocks and the button; the window, if one opened.
+            var window = new bool[third.Length];
+            double Changed(Color32[] after)
             {
-                if (window[i])
+                int changed = 0;
+                int compared = 0;
+                for (int i = 0; i < third.Length; i++)
                 {
-                    inWindow++;
+                    int x = i % width;
+                    int y = i / width;
+                    if (noisy[(y / 16) * blocksX + x / 16] || buttonRect.Contains(new Vector2(x, y)))
+                    {
+                        continue;
+                    }
+
+                    compared++;
                     if (Differs(third[i], after[i]))
                     {
-                        remaining++;
+                        window[i] = true;
+                        changed++;
                     }
                 }
+
+                return compared == 0 ? 0 : (double)changed / compared;
             }
 
-            return inWindow == 0 ? 0 : (double)remaining / inWindow;
-        }
+            // The share of the window's pixels that still differ from before the click. Counting only those keeps a
+            // dialog that fades in elsewhere meanwhile from looking like a window left open.
+            double Remaining(Color32[] after)
+            {
+                int inWindow = 0;
+                int remaining = 0;
+                for (int i = 0; i < third.Length; i++)
+                {
+                    if (window[i])
+                    {
+                        inWindow++;
+                        if (Differs(third[i], after[i]))
+                        {
+                            remaining++;
+                        }
+                    }
+                }
 
-        var closedUi = ugui();
-        await Ui.Click(toggle.gameObject);
-        await Wait.Frames(10);
-        await Wait.RealSeconds(0.3);
-        var openUi = ugui();
-        var added = openUi.Keys.Where(id => !closedUi.ContainsKey(id)).ToList();
-        var opened = await Shot(true);
-        double pixelsOpened = Changed(opened);
+                return inWindow == 0 ? 0 : (double)remaining / inWindow;
+            }
 
-        string note = null;
-        if (toggle.CurrentState == KSP.UI.UIRadioButton.State.True || added.Count > 0 || pixelsOpened > 0)
-        {
+            var closedUi = ugui();
             await Ui.Click(toggle.gameObject);
-        }
+            await Wait.Frames(10);
+            await Wait.RealSeconds(0.3);
+            var openUi = ugui();
+            var added = openUi.Keys.Where(id => !closedUi.ContainsKey(id)).ToList();
+            var opened = await Shot(true);
+            double pixelsOpened = Changed(opened);
 
-        await Wait.Frames(10);
-        await Wait.RealSeconds(0.3);
-        if (toggle.CurrentState == KSP.UI.UIRadioButton.State.True)
-        {
-            note = "the button stayed on after the second click";
-            target.SetFalse(true);
-            await Wait.Frames(5);
-        }
+            string note = null;
+            if (toggle.CurrentState == KSP.UI.UIRadioButton.State.True || added.Count > 0 || pixelsOpened > 0)
+            {
+                await Ui.Click(toggle.gameObject);
+            }
 
-        var afterUi = ugui();
-        var left = added.Where(afterUi.ContainsKey).ToList();
-        var closed = await Shot(false);
-        double pixelsClosed = Remaining(closed);
-        // The game locks input while its window is in the background ("EditorDriver_AppFocus", "ksc_ApplicationFocus"),
-        // which comes and goes with other windows, not with the button.
-        var locksLeft = InputLockManager.lockStack.Keys
-            .Where(key => !before.Contains(key))
-            .Where(key => !key.EndsWith("_AppFocus", StringComparison.Ordinal)
-                && !key.EndsWith("_ApplicationFocus", StringComparison.Ordinal))
-            .ToList();
+            await Wait.Frames(10);
+            await Wait.RealSeconds(0.3);
+            if (toggle.CurrentState == KSP.UI.UIRadioButton.State.True)
+            {
+                note = "the button stayed on after the second click";
+                target.SetFalse(true);
+                await Wait.Frames(5);
+            }
 
-        return new
-        {
-            UguiOpened = added.Count,
-            UguiLeft = left.Count,
-            UguiLeftPaths = left.Take(5).Select(id => Ui.PathOf(afterUi[id].gameObject)).ToList(),
-            PixelsOpened = pixelsOpened,
-            PixelsClosed = pixelsClosed,
-            Noise = (double)noisePixels / third.Length,
-            LocksLeft = locksLeft,
-            Note = note,
-            Seconds = clock.Elapsed.TotalSeconds,
-            OpenShot = openPng,
-            ClosedShot = lastPng,
-        };
-        """);
+            var afterUi = ugui();
+            var left = added.Where(afterUi.ContainsKey).ToList();
+            var closed = await Shot(false);
+            double pixelsClosed = Remaining(closed);
+            // The game locks input while its window is in the background ("EditorDriver_AppFocus", "ksc_ApplicationFocus"),
+            // which comes and goes with other windows, not with the button.
+            var locksLeft = InputLockManager.lockStack.Keys
+                .Where(key => !before.Contains(key))
+                .Where(key => !key.EndsWith("_AppFocus", StringComparison.Ordinal)
+                    && !key.EndsWith("_ApplicationFocus", StringComparison.Ordinal))
+                .ToList();
+
+            return new
+            {
+                UguiOpened = added.Count,
+                UguiLeft = left.Count,
+                UguiLeftPaths = left.Take(5).Select(id => Ui.PathOf(afterUi[id].gameObject)).ToList(),
+                PixelsOpened = pixelsOpened,
+                PixelsClosed = pixelsClosed,
+                Noise = (double)noisePixels / third.Length,
+                LocksLeft = locksLeft,
+                Note = note,
+                Seconds = clock.Elapsed.TotalSeconds,
+                OpenShot = openPng,
+                ClosedShot = lastPng,
+            };
+            """
+    );
 }

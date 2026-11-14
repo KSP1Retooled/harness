@@ -34,17 +34,26 @@ public abstract class BootSuite<TInstall> : KspSuite<TInstall>
     public async Task Every_plugin_in_GameData_loaded()
     {
         var gameData = Instance.GameDataDir;
-        var installed = Directory.EnumerateFiles(gameData, "*.dll", SearchOption.AllDirectories)
-            .Select(path => (Path: path, Key: Path.GetRelativePath(gameData, path).Replace(Path.DirectorySeparatorChar, '/')))
+        var installed = Directory
+            .EnumerateFiles(gameData, "*.dll", SearchOption.AllDirectories)
+            .Select(path =>
+                (Path: path, Key: Path.GetRelativePath(gameData, path).Replace(Path.DirectorySeparatorChar, '/'))
+            )
             // KSP loads no plugins from PluginData folders, and native libraries are not plugins.
-            .Where(file => !file.Key.Contains("/PluginData/", StringComparison.OrdinalIgnoreCase)
-                && !file.Key.StartsWith("PluginData/", StringComparison.OrdinalIgnoreCase))
+            .Where(file =>
+                !file.Key.Contains("/PluginData/", StringComparison.OrdinalIgnoreCase)
+                && !file.Key.StartsWith("PluginData/", StringComparison.OrdinalIgnoreCase)
+            )
             .Where(file => IsManagedAssembly(file.Path))
             .Select(file => file.Key)
             .ToList();
 
         var report = await this.RunAsync<PluginReport>(PluginsSnippet, [], TimeSpan.FromMinutes(2));
-        var loaded = report.Loaded.ToDictionary(entry => entry.File, entry => entry.Problem, StringComparer.OrdinalIgnoreCase);
+        var loaded = report.Loaded.ToDictionary(
+            entry => entry.File,
+            entry => entry.Problem,
+            StringComparer.OrdinalIgnoreCase
+        );
         var provided = new HashSet<string>(report.ProvidedByGame, StringComparer.OrdinalIgnoreCase);
 
         // Retooled logs the DLLs it skips because it ships them itself (KSPCommunityFixes); they count as loaded.
@@ -53,19 +62,24 @@ public abstract class BootSuite<TInstall> : KspSuite<TInstall>
             var match = ProvidedByGame.Match(log.Message);
             if (match.Success)
             {
-                provided.Add(Path.GetRelativePath(gameData, match.Groups[1].Value).Replace(Path.DirectorySeparatorChar, '/'));
+                provided.Add(
+                    Path.GetRelativePath(gameData, match.Groups[1].Value).Replace(Path.DirectorySeparatorChar, '/')
+                );
             }
         }
 
         var missing = installed.Where(file => !loaded.ContainsKey(file) && !provided.Contains(file)).ToList();
         var providedInstalled = installed.Where(provided.Contains).ToList();
-        Evidence.Note($"{installed.Count} plugin DLLs installed, {report.Loaded.Count} assemblies loaded"
-            + (providedInstalled.Count > 0 ? $", provided by the game: {string.Join(", ", providedInstalled)}" : ""));
+        Evidence.Note(
+            $"{installed.Count} plugin DLLs installed, {report.Loaded.Count} assemblies loaded"
+                + (providedInstalled.Count > 0 ? $", provided by the game: {string.Join(", ", providedInstalled)}" : "")
+        );
 
         Check.Empty(missing, "installed plugins the game did not load");
         Check.Empty(
             report.Loaded.Where(entry => entry.Problem != null).Select(entry => $"{entry.File}: {entry.Problem}"),
-            "plugins whose types failed to load");
+            "plugins whose types failed to load"
+        );
     }
 
     [Test]
@@ -76,15 +90,19 @@ public abstract class BootSuite<TInstall> : KspSuite<TInstall>
         var accepted = fromMods.Where(e => known.Any(regex => regex.IsMatch(e.Message))).ToList();
         var errors = fromMods.Except(accepted).ToList();
 
-        Evidence.Note($"{Game.Log.ErrorsSince(GameStart).Count} errors logged since boot, {fromMods.Count} from mod code"
-            + (accepted.Count > 0 ? $", {accepted.Count} of them known" : ""));
+        Evidence.Note(
+            $"{Game.Log.ErrorsSince(GameStart).Count} errors logged since boot, {fromMods.Count} from mod code"
+                + (accepted.Count > 0 ? $", {accepted.Count} of them known" : "")
+        );
         if (errors.Count > 0)
         {
             Evidence.Write("mod-errors.txt", string.Join("\n\n", errors.Select(e => $"{e}\n{e.Stack}")));
         }
 
-        Check.Empty(errors.Select(e => $"[{string.Join(", ", e.Mods)}] {SuiteSnippets.FirstLine(e.Message)}"),
-            "errors and exceptions whose stack runs through a mod");
+        Check.Empty(
+            errors.Select(e => $"[{string.Join(", ", e.Mods)}] {SuiteSnippets.FirstLine(e.Message)}"),
+            "errors and exceptions whose stack runs through a mod"
+        );
         return Task.CompletedTask;
     }
 
@@ -97,9 +115,7 @@ public abstract class BootSuite<TInstall> : KspSuite<TInstall>
         var loaded = new HashSet<string>(report.Loaded);
         var configs = new HashSet<string>(report.Configs);
         Check.Empty(configs.Where(name => !loaded.Contains(name)).Order(), "PART configs that did not become parts");
-        Check.Empty(
-            loaded.Where(name => !configs.Contains(name)).Order(),
-            "loaded parts with no PART config");
+        Check.Empty(loaded.Where(name => !configs.Contains(name)).Order(), "loaded parts with no PART config");
     }
 
     [Test]
@@ -114,17 +130,24 @@ public abstract class BootSuite<TInstall> : KspSuite<TInstall>
 
         var problems = new List<string>();
         var logs = Game.Log.LogsSince(GameStart);
-        var done = logs.Any(log => log.Message.StartsWith("[ModuleManager] Total loading Time", StringComparison.Ordinal)
-            || log.Message.StartsWith("[ModuleManager] Post patch ran", StringComparison.Ordinal));
+        var done = logs.Any(log =>
+            log.Message.StartsWith("[ModuleManager] Total loading Time", StringComparison.Ordinal)
+            || log.Message.StartsWith("[ModuleManager] Post patch ran", StringComparison.Ordinal)
+        );
         if (!done)
         {
-            problems.Add("ModuleManager never reported that it finished (no \"Post patch ran\" or \"Total loading Time\")");
+            problems.Add(
+                "ModuleManager never reported that it finished (no \"Post patch ran\" or \"Total loading Time\")"
+            );
         }
 
-        problems.AddRange(logs
-            .Where(log => log.Message.StartsWith("[ModuleManager]", StringComparison.Ordinal)
-                && (log.IsError || MmErrorText.IsMatch(log.Message)))
-            .Select(log => SuiteSnippets.FirstLine(log.Message)));
+        problems.AddRange(
+            logs.Where(log =>
+                    log.Message.StartsWith("[ModuleManager]", StringComparison.Ordinal)
+                    && (log.IsError || MmErrorText.IsMatch(log.Message))
+                )
+                .Select(log => SuiteSnippets.FirstLine(log.Message))
+        );
 
         // ModuleManager 4 sends all its output to this file on every boot. A cache load embeds the patch log of the
         // run that made the cache, and MM writes a cache only after a run without errors.
@@ -133,13 +156,21 @@ public abstract class BootSuite<TInstall> : KspSuite<TInstall>
         {
             var lines = File.ReadAllLines(patchLog);
             var status = lines.LastOrDefault(line => MmStatus.IsMatch(line));
-            Evidence.Note(status is null
-                ? "no ModuleManager status line"
-                : Regex.Replace(status, @"<[^>]+>|^\[\w+ [\d:.]+\]", "").Trim());
+            Evidence.Note(
+                status is null
+                    ? "no ModuleManager status line"
+                    : Regex.Replace(status, @"<[^>]+>|^\[\w+ [\d:.]+\]", "").Trim()
+            );
             Evidence.CopyFile("ModuleManager.log", patchLog);
-            problems.AddRange(lines.Where(line => line.Contains("[ERR", StringComparison.Ordinal)
-                || line.Contains("[EXC", StringComparison.Ordinal)
-                || MmErrorText.IsMatch(line)).Select(line => Regex.Replace(line, "<[^>]+>", "").Trim()));
+            problems.AddRange(
+                lines
+                    .Where(line =>
+                        line.Contains("[ERR", StringComparison.Ordinal)
+                        || line.Contains("[EXC", StringComparison.Ordinal)
+                        || MmErrorText.IsMatch(line)
+                    )
+                    .Select(line => Regex.Replace(line, "<[^>]+>", "").Trim())
+            );
         }
         else
         {
@@ -156,7 +187,8 @@ public abstract class BootSuite<TInstall> : KspSuite<TInstall>
 
     private static readonly Regex MmErrorText = new(
         @"found (<[^>]+>)?[1-9]\d* error|encountered (<[^>]+>)?[1-9]\d* exception"
-        + @"|Errors in patch|error(s)? related to GameData/");
+            + @"|Errors in patch|error(s)? related to GameData/"
+    );
 
     private static bool IsManagedAssembly(string path)
     {
@@ -227,7 +259,8 @@ public abstract class BootSuite<TInstall> : KspSuite<TInstall>
         }
 
         return new { Loaded = loaded, ProvidedByGame = provided };
-        """);
+        """
+    );
 
     // Part names in the loaded list have '.' where the config has '_'.
     private static readonly LibrarySnippet PartsSnippet = LibrarySnippet.Define(
@@ -238,5 +271,6 @@ public abstract class BootSuite<TInstall> : KspSuite<TInstall>
             .Distinct()
             .ToList();
         return new { Loaded = loaded, Configs = configs };
-        """);
+        """
+    );
 }

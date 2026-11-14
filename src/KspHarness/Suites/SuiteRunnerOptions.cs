@@ -7,8 +7,7 @@ public sealed record SuiteRunnerOptions
 {
     public const string StartVariable = "KSPHARNESS_START";
 
-    public const string Usage =
-        """
+    public const string Usage = """
         Usage: <suite exe> [options]
           --start <dir>     starting install to build instances from (default: KSPHARNESS_START)
           --home <dir>      harness home for instances, caches and runs (default: KSPHARNESS_HOME)

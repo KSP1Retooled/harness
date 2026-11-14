@@ -202,7 +202,8 @@ internal static class PopupSnippets
 
         await SweepOnce();
         return report.ToArray();
-        """);
+        """
+    );
 
     // Arguments: the simple names to look for. Returns the ones loaded in the game.
     public static readonly LibrarySnippet LoadedAssemblies = LibrarySnippet.Define(
@@ -215,5 +216,6 @@ internal static class PopupSnippets
         }
 
         return wanted.Where(loaded.Contains).ToArray();
-        """);
+        """
+    );
 }

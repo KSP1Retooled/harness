@@ -83,7 +83,8 @@ public sealed class ConfigDatabase
             if (entry.Name != "UrlConfig")
                 continue;
 
-            var file = entry.GetValue("parentUrl")
+            var file =
+                entry.GetValue("parentUrl")
                 ?? throw new FormatException("a UrlConfig entry in the ModuleManager cache has no parentUrl");
 
             foreach (var node in entry.Nodes)

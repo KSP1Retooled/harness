@@ -34,7 +34,8 @@ public sealed partial class GameSession : IAsyncDisposable
         Process? process,
         int port,
         string token,
-        TimeSpan quitTimeout)
+        TimeSpan quitTimeout
+    )
     {
         this.connection = connection;
         this.options = options;
@@ -94,7 +95,10 @@ public sealed partial class GameSession : IAsyncDisposable
     /// <c>KSP.x86_64</c> or the binary in <c>KSP.app</c>) in the instance with the harness arguments, and connects
     /// once the mod listens.
     /// </summary>
-    public static async Task<GameSession> LaunchAsync(LaunchOptions options, CancellationToken cancellationToken = default)
+    public static async Task<GameSession> LaunchAsync(
+        LaunchOptions options,
+        CancellationToken cancellationToken = default
+    )
     {
         if (string.IsNullOrEmpty(options.InstanceDir))
         {
@@ -112,8 +116,9 @@ public sealed partial class GameSession : IAsyncDisposable
         {
             throw new FileNotFoundException(
                 $"the driver mod is not in {Path.Combine(instanceDir, "GameData")}, so the game would never listen; "
-                + "deploy it with HarnessMod.DeployTo or launch with GameSession.LaunchAsync(Instance)",
-                Path.Combine(instanceDir, "GameData", HarnessMod.FolderName, HarnessMod.AssemblyRelativePath));
+                    + "deploy it with HarnessMod.DeployTo or launch with GameSession.LaunchAsync(Instance)",
+                Path.Combine(instanceDir, "GameData", HarnessMod.FolderName, HarnessMod.AssemblyRelativePath)
+            );
         }
 
         var port = options.Port ?? FreePort();
@@ -148,7 +153,8 @@ public sealed partial class GameSession : IAsyncDisposable
                 options.BootTimeout,
                 options.PlayerLogPath is null ? null : Path.GetFullPath(options.PlayerLogPath),
                 consoleOutput,
-                cancellationToken);
+                cancellationToken
+            );
             var session = new GameSession(connection, instanceDir, options, process, port, token, options.QuitTimeout);
             await session.HelloAsync(cancellationToken);
             return session;
@@ -174,7 +180,8 @@ public sealed partial class GameSession : IAsyncDisposable
     public static Task<GameSession> LaunchAsync(
         Instance instance,
         LaunchOptions? options = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         instance.EnsureNoGameRunning("launch a game");
         HarnessMod.DeployTo(instance);
@@ -188,11 +195,20 @@ public sealed partial class GameSession : IAsyncDisposable
         string token,
         string instanceDir,
         SessionOptions? options = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         options ??= new SessionOptions();
         var connection = await RpcConnection.ConnectAsync(port, cancellationToken);
-        var session = new GameSession(connection, Path.GetFullPath(instanceDir), options, null, port, token, TimeSpan.Zero);
+        var session = new GameSession(
+            connection,
+            Path.GetFullPath(instanceDir),
+            options,
+            null,
+            port,
+            token,
+            TimeSpan.Zero
+        );
         try
         {
             await session.HelloAsync(cancellationToken);
@@ -217,7 +233,8 @@ public sealed partial class GameSession : IAsyncDisposable
         string instanceDir,
         string? playerLog,
         TimeSpan bootTimeout,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         var connection = await ConnectWhenListeningAsync(
             process,
@@ -225,9 +242,17 @@ public sealed partial class GameSession : IAsyncDisposable
             bootTimeout,
             playerLog is null ? null : Path.GetFullPath(playerLog),
             consoleOutput: null,
-            cancellationToken);
+            cancellationToken
+        );
         var session = new GameSession(
-            connection, Path.GetFullPath(instanceDir), new SessionOptions(), null, port, token, TimeSpan.Zero);
+            connection,
+            Path.GetFullPath(instanceDir),
+            new SessionOptions(),
+            null,
+            port,
+            token,
+            TimeSpan.Zero
+        );
         try
         {
             await session.HelloAsync(cancellationToken);
@@ -247,14 +272,16 @@ public sealed partial class GameSession : IAsyncDisposable
         if (layout is null)
         {
             throw new FileNotFoundException(
-                $"{instanceDir} has no game executable (KSP_x64.exe, KSP.x86_64 or KSP.app/Contents/MacOS/KSP)");
+                $"{instanceDir} has no game executable (KSP_x64.exe, KSP.x86_64 or KSP.app/Contents/MacOS/KSP)"
+            );
         }
 
         if (!layout.RunsOnThisMachine)
         {
             throw new PlatformNotSupportedException(
                 $"{instanceDir} holds the {layout.Platform} build of the game, which this machine cannot run; build "
-                + "the instance from a starting install for this operating system");
+                    + "the instance from a starting install for this operating system"
+            );
         }
 
         return layout.LaunchPath;
@@ -299,7 +326,9 @@ public sealed partial class GameSession : IAsyncDisposable
     {
         try
         {
-            await connection.RequestAsync("quit", [], cancellationToken).WaitAsync(options.RequestTimeout, cancellationToken);
+            await connection
+                .RequestAsync("quit", [], cancellationToken)
+                .WaitAsync(options.RequestTimeout, cancellationToken);
         }
         catch (GameConnectionLostException)
         {
@@ -321,7 +350,8 @@ public sealed partial class GameSession : IAsyncDisposable
             return;
         }
 
-        await connection.RequestAsync("release", new JsonObject { ["handles"] = ids }, cancellationToken)
+        await connection
+            .RequestAsync("release", new JsonObject { ["handles"] = ids }, cancellationToken)
             .WaitAsync(options.RequestTimeout, cancellationToken);
     }
 
@@ -343,8 +373,13 @@ public sealed partial class GameSession : IAsyncDisposable
                 using var quitting = new CancellationTokenSource(quitTimeout);
                 await QuitAsync(quitting.Token);
             }
-            catch (Exception e) when (e is OperationCanceledException or TimeoutException or GameRpcException
-                or GameConnectionLostException)
+            catch (Exception e)
+                when (e
+                        is OperationCanceledException
+                            or TimeoutException
+                            or GameRpcException
+                            or GameConnectionLostException
+                )
             {
                 // The game is killed below.
             }
@@ -359,7 +394,11 @@ public sealed partial class GameSession : IAsyncDisposable
     private async Task HelloAsync(CancellationToken cancellationToken)
     {
         var result = await connection
-            .RequestAsync("hello", new JsonObject { ["token"] = Token, ["protocol"] = ProtocolVersion }, cancellationToken)
+            .RequestAsync(
+                "hello",
+                new JsonObject { ["token"] = Token, ["protocol"] = ProtocolVersion },
+                cancellationToken
+            )
             .WaitAsync(options.RequestTimeout, cancellationToken);
 
         Info = new GameInfo(
@@ -370,12 +409,14 @@ public sealed partial class GameSession : IAsyncDisposable
             result?["unity"]?.GetValue<string>() ?? "",
             result?["scene"]?.GetValue<string>() ?? "",
             result?["loaded"]?.GetValue<bool>() ?? false,
-            result?["logCursor"]?.GetValue<long>() ?? 0);
+            result?["logCursor"]?.GetValue<long>() ?? 0
+        );
 
         if (Info.Protocol != ProtocolVersion)
         {
             throw new InvalidOperationException(
-                $"the driver mod speaks protocol {Info.Protocol}, but this library speaks {ProtocolVersion}");
+                $"the driver mod speaks protocol {Info.Protocol}, but this library speaks {ProtocolVersion}"
+            );
         }
 
         Log.SetCursorFloor(Info.LogCursor);
@@ -427,7 +468,8 @@ public sealed partial class GameSession : IAsyncDisposable
         TimeSpan bootTimeout,
         string? playerLog,
         ConsoleTail? consoleOutput,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         var deadline = Stopwatch.StartNew();
         var modCheck = new ModLoadCheck(playerLog, port);
@@ -437,11 +479,14 @@ public sealed partial class GameSession : IAsyncDisposable
             if (process.HasExited)
             {
                 // Waiting again lets the drained output reach its end, so the message holds the game's last words.
-                await process.WaitForExitAsync(cancellationToken).WaitAsync(TimeSpan.FromSeconds(5), cancellationToken)
+                await process
+                    .WaitForExitAsync(cancellationToken)
+                    .WaitAsync(TimeSpan.FromSeconds(5), cancellationToken)
                     .ContinueWith(_ => { }, TaskScheduler.Default);
                 throw new GameExitedException(
                     $"the game exited with code {process.ExitCode} before the driver mod accepted a connection"
-                    + consoleOutput?.Describe());
+                        + consoleOutput?.Describe()
+                );
             }
 
             if (deadline.Elapsed > bootTimeout)
@@ -460,7 +505,10 @@ public sealed partial class GameSession : IAsyncDisposable
                 attempt.CancelAfter(TimeSpan.FromSeconds(5));
                 return await RpcConnection.ConnectAsync(port, attempt.Token);
             }
-            catch (Exception e) when (e is SocketException || (e is OperationCanceledException && !cancellationToken.IsCancellationRequested))
+            catch (Exception e)
+                when (e is SocketException
+                    || (e is OperationCanceledException && !cancellationToken.IsCancellationRequested)
+                )
             {
                 await Task.Delay(TimeSpan.FromMilliseconds(500), cancellationToken);
             }

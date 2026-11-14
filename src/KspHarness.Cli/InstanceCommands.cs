@@ -43,7 +43,8 @@ public static class InstanceCommands
         IReadOnlyList<string> ckan,
         HarnessHome home,
         Action<string>? log,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         name = string.IsNullOrWhiteSpace(name) ? CommandLineInstall.DefaultName : name.Trim();
         if (name.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0 || name.StartsWith('.'))
@@ -60,7 +61,8 @@ public static class InstanceCommands
             home,
             lockFile,
             new InstanceBuildOptions { Log = log },
-            cancellationToken);
+            cancellationToken
+        );
     }
 
     /// <summary>The ready instances in the home, newest first.</summary>
@@ -71,7 +73,8 @@ public static class InstanceCommands
             return [];
         }
 
-        return Directory.EnumerateDirectories(home.InstancesDir)
+        return Directory
+            .EnumerateDirectories(home.InstancesDir)
             .Where(dir => !Path.GetFileName(dir).StartsWith('.') && Instance.IsReady(dir))
             .Select(dir => Instance.Open(dir))
             .OrderByDescending(instance => instance.Record.CreatedUtc)

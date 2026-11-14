@@ -54,9 +54,7 @@ public class ScriptAwaitable : ICriticalNotifyCompletion
     internal virtual bool Poll() => true;
 
     /// <summary>Called once, on the main thread, before the continuation resumes.</summary>
-    internal virtual void OnFinished()
-    {
-    }
+    internal virtual void OnFinished() { }
 
     /// <summary>Polls and resumes if ready or if the run was aborted; returns whether it resumed.</summary>
     internal bool Step()
@@ -102,9 +100,7 @@ public class ScriptAwaitable : ICriticalNotifyCompletion
 public class ScriptAwaitable<T> : ScriptAwaitable
 {
     internal ScriptAwaitable(TickPoint point)
-        : base(point)
-    {
-    }
+        : base(point) { }
 
     internal T Result { get; set; }
 

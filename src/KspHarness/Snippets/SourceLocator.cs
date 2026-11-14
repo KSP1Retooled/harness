@@ -58,7 +58,11 @@ internal static class SourceLocator
         var found = Locate(file, callerLine, lines[firstIndex].Trim());
 
         // The code's own first line comes before its first non-blank line by this many lines.
-        return found with { Line = Math.Max(found.Line - firstIndex, 1), Column = 1 };
+        return found with
+        {
+            Line = Math.Max(found.Line - firstIndex, 1),
+            Column = 1,
+        };
     }
 
     private static string? Read(string file)

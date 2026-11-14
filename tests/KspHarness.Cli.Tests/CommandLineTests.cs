@@ -8,7 +8,8 @@ public sealed class CommandLineTests
         var line = CommandLine.Parse(
             ["file.csx", "--instance", "C:/inst", "--windowed", "--name=Foo"],
             ["--instance", "--name"],
-            ["--windowed"]);
+            ["--windowed"]
+        );
 
         Assert.Equal("C:/inst", line.Value("--instance"));
         Assert.Equal("Foo", line.Value("--name"));
@@ -75,27 +76,49 @@ public sealed class CommandLineTests
         Assert.Equal("dir", Program.InstanceArgument(CommandLine.Parse(["dir"], ["--instance"])));
         Assert.Equal("dir", Program.InstanceArgument(CommandLine.Parse(["--instance", "dir"], ["--instance"])));
         Assert.Throws<UsageException>(() => Program.InstanceArgument(CommandLine.Parse([], ["--instance"])));
-        Assert.Throws<UsageException>(() => Program.InstanceArgument(CommandLine.Parse(["a", "--instance", "b"], ["--instance"])));
+        Assert.Throws<UsageException>(() =>
+            Program.InstanceArgument(CommandLine.Parse(["a", "--instance", "b"], ["--instance"]))
+        );
     }
 
     [Fact]
     public async Task Unknown_commands_are_usage_errors()
     {
-        await Assert.ThrowsAsync<UsageException>(
-            () => Program.RunAsync(["frobnicate"], TextReader.Null, TextWriter.Null, TextWriter.Null, CancellationToken.None));
+        await Assert.ThrowsAsync<UsageException>(() =>
+            Program.RunAsync(["frobnicate"], TextReader.Null, TextWriter.Null, TextWriter.Null, CancellationToken.None)
+        );
     }
 
     [Fact]
     public void Launch_arguments_follow_the_spec()
     {
-        var request = new LaunchRequest { InstanceDir = "x", Windowed = true, Width = 1280, Height = 720 };
+        var request = new LaunchRequest
+        {
+            InstanceDir = "x",
+            Windowed = true,
+            Width = 1280,
+            Height = 720,
+        };
 
         var arguments = GameControl.Arguments(request, 5000, "abc", "C:/log.txt");
 
         Assert.Equal(
-            ["-ksp-harness-port", "5000", "-ksp-harness-token", "abc", "-screen-fullscreen", "0",
-                "-screen-width", "1280", "-screen-height", "720", "-logFile", Path.GetFullPath("C:/log.txt")],
-            arguments);
+            [
+                "-ksp-harness-port",
+                "5000",
+                "-ksp-harness-token",
+                "abc",
+                "-screen-fullscreen",
+                "0",
+                "-screen-width",
+                "1280",
+                "-screen-height",
+                "720",
+                "-logFile",
+                Path.GetFullPath("C:/log.txt"),
+            ],
+            arguments
+        );
     }
 
     [Fact]
@@ -121,7 +144,8 @@ public sealed class CommandLineTests
         Assert.Equal("/i", start.WorkingDirectory);
         Assert.Equal(
             ["-c", "exec \"$0\" \"$@\" </dev/null >/dev/null 2>&1", "/i/KSP.app/Contents/MacOS/KSP", .. arguments],
-            start.ArgumentList);
+            start.ArgumentList
+        );
     }
 
     [Fact]
@@ -155,6 +179,9 @@ public sealed class CommandLineTests
     public void The_menu_wait_gets_what_is_left_of_the_boot_timeout()
     {
         Assert.Equal(TimeSpan.FromMinutes(7), GameControl.Remaining(TimeSpan.FromMinutes(10), TimeSpan.FromMinutes(3)));
-        Assert.Equal(TimeSpan.FromSeconds(1), GameControl.Remaining(TimeSpan.FromMinutes(10), TimeSpan.FromMinutes(11)));
+        Assert.Equal(
+            TimeSpan.FromSeconds(1),
+            GameControl.Remaining(TimeSpan.FromMinutes(10), TimeSpan.FromMinutes(11))
+        );
     }
 }

@@ -3,8 +3,16 @@ namespace KspHarness.Approvals;
 /// <summary>The outcome of comparing a received image with an approved one.</summary>
 public sealed class ImageComparison
 {
-    private ImageComparison(int width, int height, int compared, int different, int maxDelta, RgbaImage diff,
-        bool rescaled, ScreenshotTolerance tolerance)
+    private ImageComparison(
+        int width,
+        int height,
+        int compared,
+        int different,
+        int maxDelta,
+        RgbaImage diff,
+        bool rescaled,
+        ScreenshotTolerance tolerance
+    )
     {
         Width = width;
         Height = height;
@@ -72,7 +80,8 @@ public sealed class ImageComparison
             {
                 throw new IncomparableImagesException(
                     $"received image is {received.Width}x{received.Height} and approved is "
-                    + $"{approved.Width}x{approved.Height}: the aspect ratios differ, so they cannot be compared");
+                        + $"{approved.Width}x{approved.Height}: the aspect ratios differ, so they cannot be compared"
+                );
             }
 
             // Shrink the larger one: enlarging cannot restore detail, so it would fail on every sharp edge.
@@ -97,14 +106,17 @@ public sealed class ImageComparison
         }
 
         var diff = new RgbaImage(approved.Width, approved.Height);
-        int compared = 0, different = 0, maxDelta = 0;
+        int compared = 0,
+            different = 0,
+            maxDelta = 0;
         for (var y = 0; y < approved.Height; y++)
         {
             var v = (y + 0.5) / approved.Height;
             for (var x = 0; x < approved.Width; x++)
             {
                 var at = approved.Offset(x, y);
-                var gray = (approved.Pixels[at] * 77 + approved.Pixels[at + 1] * 150 + approved.Pixels[at + 2] * 29) >> 8;
+                var gray =
+                    (approved.Pixels[at] * 77 + approved.Pixels[at + 1] * 150 + approved.Pixels[at + 2] * 29) >> 8;
                 var dim = (byte)(gray / 3);
 
                 var u = (x + 0.5) / approved.Width;
@@ -138,7 +150,16 @@ public sealed class ImageComparison
             }
         }
 
-        return new ImageComparison(approved.Width, approved.Height, compared, different, maxDelta, diff, rescaled, tolerance);
+        return new ImageComparison(
+            approved.Width,
+            approved.Height,
+            compared,
+            different,
+            maxDelta,
+            diff,
+            rescaled,
+            tolerance
+        );
     }
 
     private static void Set(RgbaImage image, int at, byte r, byte g, byte b)

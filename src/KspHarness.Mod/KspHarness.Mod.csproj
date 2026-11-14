@@ -1,5 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
     <AssemblyName>KspHarness.Mod</AssemblyName>
@@ -16,8 +15,10 @@
   </PropertyGroup>
 
   <Target Name="CheckKspDir" BeforeTargets="ResolveAssemblyReferences">
-    <Error Condition="'$(KspDir)' == '' Or !Exists('$(KspManagedDir)/Assembly-CSharp.dll')"
-           Text="Set KspDir (or the KSP_DIR environment variable) to the root of a stock KSP 1.12.5 install." />
+    <Error
+      Condition="'$(KspDir)' == '' Or !Exists('$(KspManagedDir)/Assembly-CSharp.dll')"
+      Text="Set KspDir (or the KSP_DIR environment variable) to the root of a stock KSP 1.12.5 install."
+    />
   </Target>
 
   <ItemGroup>
@@ -30,9 +31,10 @@
 
   <!-- The mod queries config nodes itself (Database, wildcards), from the same sources the driver uses -->
   <ItemGroup>
-    <Compile Include="..\KspHarness.ConfigNodes\**\*.cs"
-             Exclude="..\KspHarness.ConfigNodes\bin\**;..\KspHarness.ConfigNodes\obj\**"
-             Link="ConfigNodes\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile
+      Include="..\KspHarness.ConfigNodes\**\*.cs"
+      Exclude="..\KspHarness.ConfigNodes\bin\**;..\KspHarness.ConfigNodes\obj\**"
+      Link="ConfigNodes\%(RecursiveDir)%(Filename)%(Extension)"
+    />
   </ItemGroup>
-
 </Project>

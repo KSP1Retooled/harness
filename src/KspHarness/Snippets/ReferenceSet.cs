@@ -26,14 +26,22 @@ public sealed class ReferenceSet
         var identity = new StringBuilder();
         foreach (var file in files)
         {
-            identity.Append(file.Path).Append('|').Append(file.Size).Append('|').Append(file.ModifiedUtc.Ticks).Append('\n');
+            identity
+                .Append(file.Path)
+                .Append('|')
+                .Append(file.Size)
+                .Append('|')
+                .Append(file.ModifiedUtc.Ticks)
+                .Append('\n');
         }
 
         Identity = identity.ToString();
-        references = new Lazy<IReadOnlyList<MetadataReference>>(
-            () => files.Select(f => (MetadataReference)MetadataReference.CreateFromFile(f.Path)).ToArray());
-        baseCompilation = new Lazy<CSharpCompilation>(
-            () => CSharpCompilation.Create("references", references: References, options: SnippetCompiler.CreateOptions()));
+        references = new Lazy<IReadOnlyList<MetadataReference>>(() =>
+            files.Select(f => (MetadataReference)MetadataReference.CreateFromFile(f.Path)).ToArray()
+        );
+        baseCompilation = new Lazy<CSharpCompilation>(() =>
+            CSharpCompilation.Create("references", references: References, options: SnippetCompiler.CreateOptions())
+        );
     }
 
     /// <summary>The references in priority order: where two declare the same type, snippets get the earlier one's.</summary>
@@ -54,10 +62,12 @@ public sealed class ReferenceSet
     /// </summary>
     public static ReferenceSet FromInstance(string instanceDir, string? modAssemblyPath = null)
     {
-        var managed = GameLayout.FindByManagedDir(instanceDir)?.ManagedDir
+        var managed =
+            GameLayout.FindByManagedDir(instanceDir)?.ManagedDir
             ?? throw new DirectoryNotFoundException(
                 $"{instanceDir} is not a KSP install: it has no KSP_x64_Data/Managed, KSP_Data/Managed or "
-                + "KSP.app/Contents/Resources/Data/Managed");
+                    + "KSP.app/Contents/Resources/Data/Managed"
+            );
 
         var paths = new List<string>();
         paths.AddRange(SortedDlls(managed, SearchOption.TopDirectoryOnly));
@@ -70,10 +80,14 @@ public sealed class ReferenceSet
         if (Directory.Exists(gameData))
         {
             // KSP loads no assemblies from PluginData folders; a copy there must not shadow the one the game runs.
-            paths.AddRange(SortedDlls(gameData, SearchOption.AllDirectories)
-                .Where(path => !Path.GetRelativePath(gameData, path)
-                    .Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
-                    .Contains("PluginData", StringComparer.OrdinalIgnoreCase)));
+            paths.AddRange(
+                SortedDlls(gameData, SearchOption.AllDirectories)
+                    .Where(path =>
+                        !Path.GetRelativePath(gameData, path)
+                            .Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+                            .Contains("PluginData", StringComparer.OrdinalIgnoreCase)
+                    )
+            );
         }
 
         return FromFiles(paths);
@@ -132,9 +146,12 @@ public sealed class ReferenceSet
         }
 
         return References
-            .Select((reference, i) => aliasedAssemblies.Contains(Files[i].AssemblyName)
-                ? reference.WithAliases([AliasFor(Files[i].AssemblyName)])
-                : reference)
+            .Select(
+                (reference, i) =>
+                    aliasedAssemblies.Contains(Files[i].AssemblyName)
+                        ? reference.WithAliases([AliasFor(Files[i].AssemblyName)])
+                        : reference
+            )
             .ToArray();
     }
 

@@ -43,7 +43,10 @@ internal sealed class RunManager
         string methodName = Required<string>(p, "method");
         TickPoint? point = ParsePoint(Optional<string>(p, "at") ?? "Now");
         if (point == null)
-            throw new RpcException(ErrorCodes.InvalidParams, "at must be Update, FixedUpdate, LateUpdate, EndOfFrame or Now");
+            throw new RpcException(
+                ErrorCodes.InvalidParams,
+                "at must be Update, FixedUpdate, LateUpdate, EndOfFrame or Now"
+            );
 
         Type type = assembly.GetType(typeName);
         MethodInfo method = type?.GetMethod(
@@ -51,9 +54,13 @@ internal sealed class RunManager
             BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static,
             null,
             new[] { typeof(object[]) },
-            null);
+            null
+        );
         if (method == null)
-            throw new RpcException(ErrorCodes.InvalidParams, $"{typeName}.{methodName}(object[]) is not in snippet {hash}");
+            throw new RpcException(
+                ErrorCodes.InvalidParams,
+                $"{typeName}.{methodName}(object[]) is not in snippet {hash}"
+            );
 
         object[] arguments;
         try
@@ -73,7 +80,8 @@ internal sealed class RunManager
             GameClock.GameSeconds + gameTimeout,
             GameClock.RealSeconds + realTimeout,
             request.Connection.Handles,
-            context => OnAborted(run));
+            context => OnAborted(run)
+        );
 
         lock (gate)
             runs[run.Key] = run;
@@ -151,7 +159,8 @@ internal sealed class RunManager
                 _ => OnTaskDone(run, task),
                 CancellationToken.None,
                 TaskContinuationOptions.ExecuteSynchronously,
-                TaskScheduler.Default);
+                TaskScheduler.Default
+            );
         }
         else
         {
@@ -257,13 +266,14 @@ internal sealed class RunManager
         }
     }
 
-    public static JsonObject ExceptionData(Exception error) => new JsonObject
-    {
-        { "type", error.GetType().FullName },
-        { "message", error.Message },
-        { "stack", error.StackTrace ?? "" },
-        { "inner", error.InnerException != null ? ExceptionData(error.InnerException) : null },
-    };
+    public static JsonObject ExceptionData(Exception error) =>
+        new JsonObject
+        {
+            { "type", error.GetType().FullName },
+            { "message", error.Message },
+            { "stack", error.StackTrace ?? "" },
+            { "inner", error.InnerException != null ? ExceptionData(error.InnerException) : null },
+        };
 
     private static Exception Unwrap(Exception error)
     {
@@ -278,14 +288,15 @@ internal sealed class RunManager
         }
     }
 
-    private static TickPoint? ParsePoint(string at) => at switch
-    {
-        "Now" or "Update" => TickPoint.Update,
-        "FixedUpdate" => TickPoint.FixedUpdate,
-        "LateUpdate" => TickPoint.LateUpdate,
-        "EndOfFrame" => TickPoint.EndOfFrame,
-        _ => null,
-    };
+    private static TickPoint? ParsePoint(string at) =>
+        at switch
+        {
+            "Now" or "Update" => TickPoint.Update,
+            "FixedUpdate" => TickPoint.FixedUpdate,
+            "LateUpdate" => TickPoint.LateUpdate,
+            "EndOfFrame" => TickPoint.EndOfFrame,
+            _ => null,
+        };
 
     private static T Required<T>(Dictionary<string, object> parameters, string name)
     {

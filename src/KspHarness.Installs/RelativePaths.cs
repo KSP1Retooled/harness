@@ -20,8 +20,10 @@ internal static class RelativePaths
     {
         string rootFull = Path.TrimEndingDirectorySeparator(Path.GetFullPath(root));
         string full = Path.GetFullPath(Path.Combine(rootFull, relative));
-        if (!full.StartsWith(rootFull + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)
-            && !string.Equals(full, rootFull, StringComparison.OrdinalIgnoreCase))
+        if (
+            !full.StartsWith(rootFull + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)
+            && !string.Equals(full, rootFull, StringComparison.OrdinalIgnoreCase)
+        )
         {
             throw new InvalidDataException($"path '{relative}' leaves {root}");
         }

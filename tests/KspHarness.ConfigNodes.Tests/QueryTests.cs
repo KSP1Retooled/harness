@@ -105,7 +105,10 @@ public class QueryTests
         Assert.Equal(1, value.As<int>());
         Assert.Equal("ModuleCommand", value.Node.NameValue);
         Assert.Equal(new[] { "215", "20" }, Root.SelectValues("PART/MODULE/#maxThrust").Select(v => v.Value));
-        Assert.Equal(new[] { "LiquidFuel", "Oxidizer" }, Root.SelectValues("PART[liquidEngine]//name").Skip(2).Take(2).Select(v => v.Value));
+        Assert.Equal(
+            new[] { "LiquidFuel", "Oxidizer" },
+            Root.SelectValues("PART[liquidEngine]//name").Skip(2).Take(2).Select(v => v.Value)
+        );
         Assert.Equal(new[] { "Small Engine", "No Name" }, Root.SelectValues("PART/ti*").Select(v => v.Value));
         Assert.Equal(new[] { "mk1pod_v2" }, Root.Nodes[0].SelectValues("name").Select(v => v.Value));
     }
@@ -115,8 +118,14 @@ public class QueryTests
     {
         Assert.Equal(new[] { "liquidEngine", "smallEngine" }, Names(Root.Select("PART:HAS[@MODULE[ModuleEngines*]]")));
         Assert.Equal(new[] { "mk1pod_v2", "-" }, Names(Root.Select("PART:HAS[!MODULE[ModuleEngines*]]")));
-        Assert.Equal(new[] { "liquidEngine" }, Names(Root.Select("PART:HAS[@MODULE[ModuleEngines*]:HAS[#maxThrust[>100]]]")));
-        Assert.Equal(new[] { "smallEngine" }, Names(Root.Select("PART:HAS[@MODULE[ModuleEngines*]:HAS[#maxThrust[<100]]]")));
+        Assert.Equal(
+            new[] { "liquidEngine" },
+            Names(Root.Select("PART:HAS[@MODULE[ModuleEngines*]:HAS[#maxThrust[>100]]]"))
+        );
+        Assert.Equal(
+            new[] { "smallEngine" },
+            Names(Root.Select("PART:HAS[@MODULE[ModuleEngines*]:HAS[#maxThrust[<100]]]"))
+        );
         Assert.Equal(new[] { "liquidEngine" }, Names(Root.Select("PART:HAS[@MODULE:HAS[@PROPELLANT[Oxidizer]]]")));
     }
 
@@ -135,7 +144,10 @@ public class QueryTests
     {
         Assert.Equal(new[] { "smallEngine" }, Names(Root.Select("PART:HAS[#title, @MODULE[ModuleEngines]]")));
         Assert.Equal(new[] { "smallEngine" }, Names(Root.Select("PART:HAS[#title]:HAS[@MODULE]")));
-        Assert.Equal(new[] { "liquidEngine" }, Names(Root.Select("PART:HAS[@MODULE[ModuleEnginesFX]:HAS[#maxThrust[>100],@PROPELLANT[LiquidFuel]]]")));
+        Assert.Equal(
+            new[] { "liquidEngine" },
+            Names(Root.Select("PART:HAS[@MODULE[ModuleEnginesFX]:HAS[#maxThrust[>100],@PROPELLANT[LiquidFuel]]]"))
+        );
         Assert.Empty(Root.Select("PART:HAS[@MODULE[ModuleEnginesFX]:HAS[#maxThrust[>100],!PROPELLANT[LiquidFuel]]]"));
     }
 

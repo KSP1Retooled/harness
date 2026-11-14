@@ -47,6 +47,13 @@ dotnet build KspHarness.slnx
 The build compiles the driver mod against `KSP_DIR`'s assemblies and copies it next to the library, under
 `mod/GameData/KspHarness`. Launching a game deploys it into the instance. Without `KSP_DIR` the mod project fails.
 
+Format the code with [CSharpier](https://csharpier.com) before committing; CI checks it:
+
+```sh
+dotnet tool restore
+dotnet csharpier format .
+```
+
 ## Offline tests
 
 ```sh

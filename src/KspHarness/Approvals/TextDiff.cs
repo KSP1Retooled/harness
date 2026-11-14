@@ -8,8 +8,14 @@ public static class TextDiff
     // Above this many cells the middle of the two texts is shown as replaced rather than aligned line by line.
     private const long MaxTableCells = 16_000_000;
 
-    public static string Unified(string expected, string actual, string expectedName = "approved",
-        string actualName = "received", int context = 3, int maxLines = 60)
+    public static string Unified(
+        string expected,
+        string actual,
+        string expectedName = "approved",
+        string actualName = "received",
+        int context = 3,
+        int maxLines = 60
+    )
     {
         var a = Lines(expected);
         var b = Lines(actual);
@@ -77,8 +83,11 @@ public static class TextDiff
         }
 
         var suffix = 0;
-        while (suffix < a.Length - prefix && suffix < b.Length - prefix
-            && a[a.Length - 1 - suffix] == b[b.Length - 1 - suffix])
+        while (
+            suffix < a.Length - prefix
+            && suffix < b.Length - prefix
+            && a[a.Length - 1 - suffix] == b[b.Length - 1 - suffix]
+        )
         {
             suffix++;
         }
@@ -124,13 +133,15 @@ public static class TextDiff
         {
             for (var j = m - 1; j >= 0; j--)
             {
-                table[i, j] = a[offset + i] == b[offset + j]
-                    ? table[i + 1, j + 1] + 1
-                    : Math.Max(table[i + 1, j], table[i, j + 1]);
+                table[i, j] =
+                    a[offset + i] == b[offset + j]
+                        ? table[i + 1, j + 1] + 1
+                        : Math.Max(table[i + 1, j], table[i, j + 1]);
             }
         }
 
-        int x = 0, y = 0;
+        int x = 0,
+            y = 0;
         while (x < n || y < m)
         {
             if (x < n && y < m && a[offset + x] == b[offset + y])
@@ -186,7 +197,8 @@ public static class TextDiff
             end = Math.Min(ops.Count, lastChange + context + 1);
 
             var lines = new List<string>();
-            int aCount = 0, bCount = 0;
+            int aCount = 0,
+                bCount = 0;
             for (var i = start; i < end; i++)
             {
                 var op = ops[i];

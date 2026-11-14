@@ -11,7 +11,8 @@ internal sealed record LibrarySnippet(string Source, string File, int Line)
     public static LibrarySnippet Define(
         string source,
         [CallerFilePath] string file = "",
-        [CallerLineNumber] int line = 0)
+        [CallerLineNumber] int line = 0
+    )
     {
         return new LibrarySnippet(source, file, line);
     }

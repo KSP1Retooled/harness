@@ -35,7 +35,8 @@ public sealed partial class GameSession
         string craft = "Kerbal X",
         string site = "LaunchPad",
         TimeSpan? timeout = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         return RunLibraryAsync(LibrarySnippets.Launch, [craft, site], timeout, cancellationToken);
     }
@@ -48,7 +49,8 @@ public sealed partial class GameSession
         string folder,
         string game = "persistent",
         TimeSpan? timeout = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         return RunLibraryAsync(LibrarySnippets.LoadSave, [folder, game], timeout, cancellationToken);
     }
@@ -57,7 +59,11 @@ public sealed partial class GameSession
     /// Saves the current game as <c>saves/&lt;save folder&gt;/&lt;name&gt;.sfs</c>, as the quicksave key does. In flight
     /// it throws when the game refuses to save (moving on the ground, in atmosphere and so on).
     /// </summary>
-    public Task QuickSaveAsync(string name = "quicksave", TimeSpan? timeout = null, CancellationToken cancellationToken = default)
+    public Task QuickSaveAsync(
+        string name = "quicksave",
+        TimeSpan? timeout = null,
+        CancellationToken cancellationToken = default
+    )
     {
         return RunLibraryAsync(LibrarySnippets.QuickSave, [name], timeout, cancellationToken);
     }
@@ -72,10 +78,19 @@ public sealed partial class GameSession
         LibrarySnippet snippet,
         object?[] arguments,
         TimeSpan? timeout,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
-        var prepared = SnippetBuilder.FromString(snippet.Source, returnsValue: false, [], snippet.File, snippet.Line)
-            with { Arguments = arguments };
+        var prepared = SnippetBuilder.FromString(
+            snippet.Source,
+            returnsValue: false,
+            [],
+            snippet.File,
+            snippet.Line
+        ) with
+        {
+            Arguments = arguments,
+        };
         var options = RunOptions.Default with { RealTimeout = timeout ?? DefaultSceneTimeout };
         return RunAsync(prepared, options, keep: false, cancellationToken);
     }

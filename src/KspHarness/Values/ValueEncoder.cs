@@ -15,7 +15,15 @@ internal static class ValueEncoder
 
     internal static readonly HashSet<string> VectorTypeNames =
     [
-        "Vector2", "Vector3", "Vector4", "Vector2d", "Vector3d", "Quaternion", "QuaternionD", "Color", "Color32",
+        "Vector2",
+        "Vector3",
+        "Vector4",
+        "Vector2d",
+        "Vector3d",
+        "Quaternion",
+        "QuaternionD",
+        "Color",
+        "Color32",
     ];
 
     public static JsonNode? Encode(object? value)
@@ -35,12 +43,15 @@ internal static class ValueEncoder
             case GameTime time:
                 return Tagged("gametime", new JsonObject { ["seconds"] = EncodeDouble(time.TotalSeconds) });
             case Handle handle:
-                return Tagged("handle", new JsonObject
-                {
-                    ["id"] = handle.Id,
-                    ["type"] = handle.Type,
-                    ["assembly"] = handle.Assembly,
-                });
+                return Tagged(
+                    "handle",
+                    new JsonObject
+                    {
+                        ["id"] = handle.Id,
+                        ["type"] = handle.Type,
+                        ["assembly"] = handle.Assembly,
+                    }
+                );
             case Enum e:
                 return EncodeEnum(e);
             case double d:
@@ -80,7 +91,9 @@ internal static class ValueEncoder
             {
                 if (entry.Key is not string key)
                 {
-                    throw new ArgumentException($"only dictionaries with string keys can be sent to the game, not {type}");
+                    throw new ArgumentException(
+                        $"only dictionaries with string keys can be sent to the game, not {type}"
+                    );
                 }
 
                 fields[key] = Encode(entry.Value);
@@ -102,20 +115,34 @@ internal static class ValueEncoder
 
         throw new ArgumentException(
             $"a {type} can't be sent to the game. Send numbers, strings, enums, vectors, arrays, tuples, "
-            + "GameTime or handles, and build other objects inside the snippet.");
+                + "GameTime or handles, and build other objects inside the snippet."
+        );
     }
 
     public static bool IsInteger(Type type)
     {
-        return type == typeof(int) || type == typeof(long) || type == typeof(short) || type == typeof(sbyte)
-            || type == typeof(byte) || type == typeof(ushort) || type == typeof(uint) || type == typeof(ulong);
+        return type == typeof(int)
+            || type == typeof(long)
+            || type == typeof(short)
+            || type == typeof(sbyte)
+            || type == typeof(byte)
+            || type == typeof(ushort)
+            || type == typeof(uint)
+            || type == typeof(ulong);
     }
 
     /// <summary>Whether <see cref="Encode"/> can send a value of this static type.</summary>
     public static bool IsEncodable(Type type)
     {
-        if (type.IsPrimitive || type == typeof(string) || type == typeof(decimal) || type.IsEnum
-            || type == typeof(GameTime) || type == typeof(Handle) || type == typeof(byte[]))
+        if (
+            type.IsPrimitive
+            || type == typeof(string)
+            || type == typeof(decimal)
+            || type.IsEnum
+            || type == typeof(GameTime)
+            || type == typeof(Handle)
+            || type == typeof(byte[])
+        )
         {
             return true;
         }
@@ -161,12 +188,15 @@ internal static class ValueEncoder
     private static JsonObject EncodeEnum(Enum e)
     {
         var type = e.GetType();
-        return Tagged("enum", new JsonObject
-        {
-            ["type"] = type.FullName,
-            ["name"] = e.ToString(),
-            ["value"] = Convert.ToInt64(e, CultureInfo.InvariantCulture),
-        });
+        return Tagged(
+            "enum",
+            new JsonObject
+            {
+                ["type"] = type.FullName,
+                ["name"] = e.ToString(),
+                ["value"] = Convert.ToInt64(e, CultureInfo.InvariantCulture),
+            }
+        );
     }
 
     private static JsonObject? TryEncodeVector(object value, Type type)

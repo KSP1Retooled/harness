@@ -58,7 +58,8 @@ internal sealed class RpcConnection : IAsyncDisposable
     public async Task<(long Id, Task<JsonNode?> Result)> SendAsync(
         string method,
         JsonObject parameters,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         var id = Interlocked.Increment(ref nextId);
         var completion = new TaskCompletionSource<JsonNode?>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -100,7 +101,8 @@ internal sealed class RpcConnection : IAsyncDisposable
     public async Task<JsonNode?> RequestAsync(
         string method,
         JsonObject parameters,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         var (_, result) = await SendAsync(method, parameters, cancellationToken);
         return await result.WaitAsync(cancellationToken);
@@ -163,7 +165,9 @@ internal sealed class RpcConnection : IAsyncDisposable
                 var length = BinaryPrimitives.ReadUInt32LittleEndian(header);
                 if (length > MaxMessageBytes)
                 {
-                    throw new InvalidDataException($"the game sent a {length}-byte message, which is not a valid frame");
+                    throw new InvalidDataException(
+                        $"the game sent a {length}-byte message, which is not a valid frame"
+                    );
                 }
 
                 var payload = new byte[length];
@@ -250,7 +254,8 @@ internal static class RpcErrors
             RpcErrorCodes.SnippetThrew => new SnippetException(data),
             RpcErrorCodes.Cancelled => new OperationCanceledException("the game cancelled the snippet: " + message),
             RpcErrorCodes.TimedOut => new TimeoutException(
-                $"the snippet ran out of {data?["kind"]?.GetValue<string>() ?? "its"} time in the game: {message}"),
+                $"the snippet ran out of {data?["kind"]?.GetValue<string>() ?? "its"} time in the game: {message}"
+            ),
             _ => new GameRpcException(code, message, data),
         };
     }

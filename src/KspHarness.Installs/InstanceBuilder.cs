@@ -45,7 +45,8 @@ public static class InstanceBuilder
         HarnessHome home,
         string? lockFile,
         InstanceBuildOptions? options = null,
-        CancellationToken cancel = default)
+        CancellationToken cancel = default
+    )
     {
         options ??= new InstanceBuildOptions();
         var plan = InstallPlan.Create(definition);
@@ -56,8 +57,17 @@ public static class InstanceBuilder
         var lockLayers = new List<LockLayer>();
         for (int i = 0; i < plan.Layers.Count; i++)
         {
-            var (instance, lockLayer) = await BuildLayerAsync(plan.Layers, i, lockLayers, start, parent, locked[i],
-                home, options, cancel);
+            var (instance, lockLayer) = await BuildLayerAsync(
+                plan.Layers,
+                i,
+                lockLayers,
+                start,
+                parent,
+                locked[i],
+                home,
+                options,
+                cancel
+            );
             lockLayers.Add(lockLayer);
             parent = instance;
         }
@@ -76,9 +86,7 @@ public static class InstanceBuilder
         var result = new LockLayer?[plan.Layers.Count];
         if (lockFile is null)
         {
-            return mode == LockMode.Frozen
-                ? throw new InstallException("LockMode.Frozen needs a lock file")
-                : result;
+            return mode == LockMode.Frozen ? throw new InstallException("LockMode.Frozen needs a lock file") : result;
         }
 
         var existing = mode == LockMode.Update ? null : LockFile.Load(lockFile);
@@ -98,7 +106,8 @@ public static class InstanceBuilder
 
         if (mode == LockMode.Frozen && result.Any(layer => layer is null))
         {
-            string why = existing is null ? "is missing"
+            string why =
+                existing is null ? "is missing"
                 : existing.Start != start.Kind ? $"was resolved for a {existing.Start} install, not {start.Kind}"
                 : "does not match the definition";
             throw new InstallException($"lock file {lockFile} {why}; build once with LockMode.Update to rewrite it");
@@ -122,7 +131,8 @@ public static class InstanceBuilder
         LockLayer? locked,
         HarnessHome home,
         InstanceBuildOptions options,
-        CancellationToken cancel)
+        CancellationToken cancel
+    )
     {
         var layer = layers[index];
         string name = SafeName(layer.Definition.Name);
@@ -158,11 +168,14 @@ public static class InstanceBuilder
             var copier = new TreeCopier(start.Layout.DataDirRelative, options.UseHardLinks);
             var stats = copier.Copy(start.Root, temp, new HashSet<string> { Instance.HarnessFolder }, cancel);
             options.Log?.Invoke(
-                $"{name}: {stats.Linked} files linked, {stats.Copied} copied ({stats.CopiedBytes >> 20} MiB)");
+                $"{name}: {stats.Linked} files linked, {stats.Copied} copied ({stats.CopiedBytes >> 20} MiB)"
+            );
             if (stats.Refused > 0)
             {
-                options.Log?.Invoke($"{name}: {stats.Refused} files could not be linked and were copied (no write "
-                    + $"access to them in {start.Root}, or at the link limit)");
+                options.Log?.Invoke(
+                    $"{name}: {stats.Refused} files could not be linked and were copied (no write "
+                        + $"access to them in {start.Root}, or at the link limit)"
+                );
             }
 
             var ckan = new CkanRun(start, temp, ckanLog, options);
@@ -212,8 +225,10 @@ public static class InstanceBuilder
                 Ckan = locked.Ckan,
                 CreatedUtc = DateTime.UtcNow,
             };
-            File.WriteAllText(Path.Combine(harness, Instance.RecordFileName),
-                JsonSerializer.Serialize(record, InstanceRecord.JsonOptions));
+            File.WriteAllText(
+                Path.Combine(harness, Instance.RecordFileName),
+                JsonSerializer.Serialize(record, InstanceRecord.JsonOptions)
+            );
 
             if (!MoveIntoPlace(temp, final))
             {
@@ -269,7 +284,8 @@ public static class InstanceBuilder
         CkanRun ckan,
         HarnessHome home,
         InstanceBuildOptions options,
-        CancellationToken cancel)
+        CancellationToken cancel
+    )
     {
         var modules = await ApplyCkanAsync(layer, locked, ckan, options, cancel);
         await ApplyArchivesAsync(layer, gameDir, home, options, cancel);
@@ -284,7 +300,8 @@ public static class InstanceBuilder
         LockLayer? locked,
         CkanRun ckan,
         InstanceBuildOptions options,
-        CancellationToken cancel)
+        CancellationToken cancel
+    )
     {
         var ckanSteps = layer.CkanSteps.ToList();
         var compat = layer.Steps.OfType<CompatibleVersionStep>().Select(step => step.Version).ToList();
@@ -307,8 +324,11 @@ public static class InstanceBuilder
         await ckan.UpdateOnceAsync(layer.Definition.Name, cancel);
 
         var before = CkanClient.ReadInstalled(ckan.GameDir);
-        var installedVersions = before.ToDictionary(module => module.Identifier, module => module.Version,
-            StringComparer.OrdinalIgnoreCase);
+        var installedVersions = before.ToDictionary(
+            module => module.Identifier,
+            module => module.Version,
+            StringComparer.OrdinalIgnoreCase
+        );
         var install = new List<string>();
         var upgrade = new List<string>();
 
@@ -344,11 +364,16 @@ public static class InstanceBuilder
         // CKAN skips a module that is incompatible with the instance's game versions, says "Nothing to install" and
         // still exits with 0, so success is judged by what the registry holds afterwards.
         var after = CkanClient.ReadInstalled(ckan.GameDir);
-        var afterVersions = after.ToDictionary(module => module.Identifier, module => module.Version,
-            StringComparer.OrdinalIgnoreCase);
+        var afterVersions = after.ToDictionary(
+            module => module.Identifier,
+            module => module.Version,
+            StringComparer.OrdinalIgnoreCase
+        );
         var missing = wanted
-            .Where(module => !afterVersions.TryGetValue(module.Identifier, out string? version)
-                || (module.Version is not null && module.Version != version))
+            .Where(module =>
+                !afterVersions.TryGetValue(module.Identifier, out string? version)
+                || (module.Version is not null && module.Version != version)
+            )
             .Select(module => module.Version is null ? module.Identifier : $"{module.Identifier}={module.Version}")
             .ToList();
 
@@ -356,7 +381,8 @@ public static class InstanceBuilder
         {
             throw new InstallException(
                 $"CKAN did not install {string.Join(", ", missing)} (incompatible with the instance's game versions? "
-                + $"add CompatibleVersion steps). Log: {ckan.LogPath}");
+                    + $"add CompatibleVersion steps). Log: {ckan.LogPath}"
+            );
         }
 
         var added = after.Except(before).ToList();
@@ -372,8 +398,12 @@ public static class InstanceBuilder
     /// The instance is stored under a hash of the locked modules, so the layer must add exactly those. CKAN can add
     /// others when a locked version's metadata changed its dependencies, or when another module now provides one.
     /// </summary>
-    internal static void RequireLockedModules(string layerName, LockLayer locked, IReadOnlyList<LockedModule> added,
-        string logPath)
+    internal static void RequireLockedModules(
+        string layerName,
+        LockLayer locked,
+        IReadOnlyList<LockedModule> added,
+        string logPath
+    )
     {
         var extra = added.Except(locked.Ckan).Select(module => module.Spec).ToList();
         var absent = locked.Ckan.Except(added).Select(module => module.Spec).ToList();
@@ -395,11 +425,17 @@ public static class InstanceBuilder
 
         throw new InstallException(
             $"{layerName}: CKAN's result does not match the lock file: {string.Join("; ", problems)}. Build with "
-            + $"LockMode.Update to resolve the layer again. Log: {logPath}");
+                + $"LockMode.Update to resolve the layer again. Log: {logPath}"
+        );
     }
 
-    private static async Task ApplyArchivesAsync(InstallLayer layer, string gameDir, HarnessHome home,
-        InstanceBuildOptions options, CancellationToken cancel)
+    private static async Task ApplyArchivesAsync(
+        InstallLayer layer,
+        string gameDir,
+        HarnessHome home,
+        InstanceBuildOptions options,
+        CancellationToken cancel
+    )
     {
         var cache = new ArchiveCache(home.ArchiveCacheDir, options.Http);
         foreach (var step in layer.ArchiveSteps)
@@ -417,8 +453,12 @@ public static class InstanceBuilder
     }
 
     // After the mods are in and before the definition's own files, which may hold other answers.
-    private static void ApplyKnownPopups(InstallLayer layer, StartingInstall start, string gameDir,
-        InstanceBuildOptions options)
+    private static void ApplyKnownPopups(
+        InstallLayer layer,
+        StartingInstall start,
+        string gameDir,
+        InstanceBuildOptions options
+    )
     {
         var applied = KnownPopups.Apply(gameDir, layer.Popups.KnownAnswers, start);
         if (applied.Count > 0)
@@ -445,8 +485,10 @@ public static class InstanceBuilder
         var settings = layer.Steps.OfType<SettingStep>().ToList();
         if (settings.Count > 0)
         {
-            SettingsFile.Apply(Path.Combine(gameDir, SettingsFile.FileName),
-                settings.Select(step => KeyValuePair.Create(step.Key, step.Value)));
+            SettingsFile.Apply(
+                Path.Combine(gameDir, SettingsFile.FileName),
+                settings.Select(step => KeyValuePair.Create(step.Key, step.Value))
+            );
         }
     }
 
@@ -455,8 +497,12 @@ public static class InstanceBuilder
     /// versions. Steps are applied by kind (compat, CKAN, archives, known popup answers, folders, settings), so their
     /// order only matters within a kind.
     /// </summary>
-    internal static string Hash(InstallLayer layer, StartingInstall start, Instance? parent,
-        IReadOnlyList<LockedModule> modules)
+    internal static string Hash(
+        InstallLayer layer,
+        StartingInstall start,
+        Instance? parent,
+        IReadOnlyList<LockedModule> modules
+    )
     {
         var text = new StringBuilder();
         text.Append("ksp-harness instance 1\n");
@@ -536,8 +582,13 @@ public static class InstanceBuilder
 
         public string LogPath => logPath;
 
-        public CkanClient Client => client ??= new CkanClient(CkanClient.FindExecutable(options.CkanExecutable),
-            gameDir, logPath, options.CkanTimeout);
+        public CkanClient Client =>
+            client ??= new CkanClient(
+                CkanClient.FindExecutable(options.CkanExecutable),
+                gameDir,
+                logPath,
+                options.CkanTimeout
+            );
 
         public async Task AddCompatibleVersionsAsync(IEnumerable<string> versions, CancellationToken cancel)
         {

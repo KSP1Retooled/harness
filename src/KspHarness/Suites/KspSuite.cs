@@ -48,7 +48,8 @@ public abstract class KspSuite
     /// </summary>
     public IReadOnlyList<LogEvent> ModErrors(long since)
     {
-        return Game.Log.ErrorsSince(since)
+        return Game
+            .Log.ErrorsSince(since)
             .Where(e => e.Mods.Any(mod => !mod.StartsWith("KspHarness.Mod@", StringComparison.Ordinal)))
             .ToList();
     }

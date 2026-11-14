@@ -36,20 +36,28 @@ public sealed class PopupSnippetTests
     public async Task A_broken_closer_is_reported_and_the_others_still_run()
     {
         var runs = 0;
-        await using var fake = await FakeSession.StartAsync(TestInstalls.Stock, game => game.OnRun = (_, _) =>
-            Interlocked.Increment(ref runs) switch
-            {
-                // The sweep, then the loaded-assembly query, then the closers that compile.
-                1 => Task.FromResult<JsonNode?>(new JsonArray()),
-                2 => Task.FromResult<JsonNode?>(new JsonArray("Assembly-CSharp")),
-                3 => throw new FakeError(-32000, "snippet threw", new JsonObject
-                {
-                    ["type"] = "System.NullReferenceException",
-                    ["message"] = "no instance",
-                    ["stack"] = "",
-                }),
-                _ => Task.FromResult<JsonNode?>(true),
-            });
+        await using var fake = await FakeSession.StartAsync(
+            TestInstalls.Stock,
+            game =>
+                game.OnRun = (_, _) =>
+                    Interlocked.Increment(ref runs) switch
+                    {
+                        // The sweep, then the loaded-assembly query, then the closers that compile.
+                        1 => Task.FromResult<JsonNode?>(new JsonArray()),
+                        2 => Task.FromResult<JsonNode?>(new JsonArray("Assembly-CSharp")),
+                        3 => throw new FakeError(
+                            -32000,
+                            "snippet threw",
+                            new JsonObject
+                            {
+                                ["type"] = "System.NullReferenceException",
+                                ["message"] = "no instance",
+                                ["stack"] = "",
+                            }
+                        ),
+                        _ => Task.FromResult<JsonNode?>(true),
+                    }
+        );
 
         var policy = PopupPolicy.Default with
         {
@@ -62,7 +70,10 @@ public sealed class PopupSnippetTests
             ],
         };
 
-        var closed = await fake.Session.DismissDialogsAsync(policy, cancellationToken: TestContext.Current.CancellationToken);
+        var closed = await fake.Session.DismissDialogsAsync(
+            policy,
+            cancellationToken: TestContext.Current.CancellationToken
+        );
 
         Assert.Equal(["Renamed", "Throws", "Works"], closed.Select(c => c.Name));
         Assert.StartsWith("could not run: ", closed[0].Detail);
@@ -73,10 +84,11 @@ public sealed class PopupSnippetTests
 
     public sealed class Mods : InstallDefinition
     {
-        public override void Configure(InstallBuilder install) => install
-            .AnswerDialog("Incompatible*", "OK")
-            .LeaveDialog("Keep me")
-            .CloseWindowWith("**/MyWindow/ButtonClose");
+        public override void Configure(InstallBuilder install) =>
+            install
+                .AnswerDialog("Incompatible*", "OK")
+                .LeaveDialog("Keep me")
+                .CloseWindowWith("**/MyWindow/ButtonClose");
     }
 
     [Fact]

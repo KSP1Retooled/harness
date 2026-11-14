@@ -19,9 +19,7 @@ public sealed class ConfigNodeAdapter
 {
     public static readonly ConfigNodeAdapter Instance = null;
 
-    private ConfigNodeAdapter()
-    {
-    }
+    private ConfigNodeAdapter() { }
 
     public string GetName(object node) => throw OutsideGame.Error();
 

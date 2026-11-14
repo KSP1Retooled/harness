@@ -27,7 +27,11 @@ public sealed class GameLogTests
         var log = new GameLog();
         log.Add(Log(0, "Log", "old match"));
 
-        var waiting = log.WaitForMessageAsync("match", TimeSpan.FromSeconds(10), cancellationToken: TestContext.Current.CancellationToken);
+        var waiting = log.WaitForMessageAsync(
+            "match",
+            TimeSpan.FromSeconds(10),
+            cancellationToken: TestContext.Current.CancellationToken
+        );
         Assert.False(waiting.IsCompleted);
 
         log.Add(Log(1, "Log", "new match"));
@@ -40,23 +44,30 @@ public sealed class GameLogTests
     {
         var log = new GameLog();
 
-        await Assert.ThrowsAsync<TimeoutException>(
-            () => log.WaitForMessageAsync("never", TimeSpan.FromMilliseconds(50), cancellationToken: TestContext.Current.CancellationToken));
+        await Assert.ThrowsAsync<TimeoutException>(() =>
+            log.WaitForMessageAsync(
+                "never",
+                TimeSpan.FromMilliseconds(50),
+                cancellationToken: TestContext.Current.CancellationToken
+            )
+        );
     }
 
     private static GameEvent Log(long seq, string level, string message, params string[] mods)
     {
-        return GameEventParser.Parse(new JsonObject
-        {
-            ["kind"] = "log",
-            ["seq"] = seq,
-            ["realTime"] = 0.5,
-            ["frame"] = 1,
-            ["ut"] = null,
-            ["level"] = level,
-            ["message"] = message,
-            ["stack"] = "",
-            ["mods"] = new JsonArray(mods.Select(m => (JsonNode)m).ToArray()),
-        });
+        return GameEventParser.Parse(
+            new JsonObject
+            {
+                ["kind"] = "log",
+                ["seq"] = seq,
+                ["realTime"] = 0.5,
+                ["frame"] = 1,
+                ["ut"] = null,
+                ["level"] = level,
+                ["message"] = message,
+                ["stack"] = "",
+                ["mods"] = new JsonArray(mods.Select(m => (JsonNode)m).ToArray()),
+            }
+        );
     }
 }

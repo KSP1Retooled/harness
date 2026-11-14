@@ -12,9 +12,12 @@
     them the Windows path stays, so the projects that need it report a missing Assembly-CSharp.dll under KspDir.
   -->
   <PropertyGroup>
-    <KspManagedDir Condition="'$(KspManagedDir)' == '' And Exists('$(KspDir)/KSP_x64_Data/Managed')">$(KspDir)/KSP_x64_Data/Managed</KspManagedDir>
-    <KspManagedDir Condition="'$(KspManagedDir)' == '' And Exists('$(KspDir)/KSP_Data/Managed')">$(KspDir)/KSP_Data/Managed</KspManagedDir>
-    <KspManagedDir Condition="'$(KspManagedDir)' == '' And Exists('$(KspDir)/KSP.app/Contents/Resources/Data/Managed')">$(KspDir)/KSP.app/Contents/Resources/Data/Managed</KspManagedDir>
+    <KspManagedDir Condition="'$(KspManagedDir)' == '' And Exists('$(KspDir)/KSP_x64_Data/Managed')"
+      >$(KspDir)/KSP_x64_Data/Managed</KspManagedDir>
+    <KspManagedDir Condition="'$(KspManagedDir)' == '' And Exists('$(KspDir)/KSP_Data/Managed')"
+      >$(KspDir)/KSP_Data/Managed</KspManagedDir>
+    <KspManagedDir Condition="'$(KspManagedDir)' == '' And Exists('$(KspDir)/KSP.app/Contents/Resources/Data/Managed')"
+      >$(KspDir)/KSP.app/Contents/Resources/Data/Managed</KspManagedDir>
     <KspManagedDir Condition="'$(KspManagedDir)' == ''">$(KspDir)/KSP_x64_Data/Managed</KspManagedDir>
   </PropertyGroup>
 </Project>

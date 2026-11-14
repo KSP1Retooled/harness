@@ -43,7 +43,8 @@ internal sealed class GroupRun : IAsyncDisposable
         string runDir,
         string lockDir,
         TextWriter output,
-        bool keepGame)
+        bool keepGame
+    )
     {
         this.group = group;
         this.start = start;
@@ -61,8 +62,8 @@ internal sealed class GroupRun : IAsyncDisposable
     public static async Task<IReadOnlyList<TestResult>> NotRunAsync(SuiteGroup group, TextWriter output)
     {
         await output.WriteLineAsync($"{group.Name}: {group.Tests.Count} tests not run, the run was interrupted");
-        return group.Tests
-            .Select(test => new TestResult
+        return group
+            .Tests.Select(test => new TestResult
             {
                 Suite = test.Suite.Name,
                 Test = test.Method.Name,
@@ -92,11 +93,18 @@ internal sealed class GroupRun : IAsyncDisposable
                 LockFile = lockFile,
                 BuildSeconds = Seconds(clock.Elapsed),
             };
-            await output.WriteLineAsync($"  instance {instance.Name} ready after {SuiteRunner.FormatDuration(clock.Elapsed)}");
+            await output.WriteLineAsync(
+                $"  instance {instance.Name} ready after {SuiteRunner.FormatDuration(clock.Elapsed)}"
+            );
         }
         catch (Exception e) when (!interrupt.IsCancellationRequested)
         {
-            Summary = Summary with { LockFile = lockFile, BuildSeconds = Seconds(clock.Elapsed), BuildError = e.Message };
+            Summary = Summary with
+            {
+                LockFile = lockFile,
+                BuildSeconds = Seconds(clock.Elapsed),
+                BuildError = e.Message,
+            };
             await output.WriteLineAsync($"  the instance did not build: {e.Message}");
             var evidence = new TestEvidence(Path.Combine(runDir, group.Name));
             evidence.Write("build-error.txt", e.ToString());
@@ -114,7 +122,12 @@ internal sealed class GroupRun : IAsyncDisposable
         }
         catch (Exception) when (interrupt.IsCancellationRequested)
         {
-            Summary = Summary with { LockFile = lockFile, BuildSeconds = Seconds(clock.Elapsed), BuildError = "interrupted" };
+            Summary = Summary with
+            {
+                LockFile = lockFile,
+                BuildSeconds = Seconds(clock.Elapsed),
+                BuildError = "interrupted",
+            };
             await output.WriteLineAsync("  interrupted while the instance was building");
             foreach (var test in group.Tests)
             {
@@ -144,7 +157,8 @@ internal sealed class GroupRun : IAsyncDisposable
         {
             await output.WriteLineAsync(
                 $"  left the game running: pid {game.Process?.Id}, port {game.Port}, token {game.Token}, "
-                + $"instance {game.InstanceDir}");
+                    + $"instance {game.InstanceDir}"
+            );
             return;
         }
 
@@ -231,7 +245,10 @@ internal sealed class GroupRun : IAsyncDisposable
         {
             failure = new InvalidOperationException("the game exited or disconnected after the test's body returned");
         }
-        else if (failure is null && firstGame.Log.Since(firstCursor).OfType<CrashingEvent>().FirstOrDefault() is { } crash)
+        else if (
+            failure is null
+            && firstGame.Log.Since(firstCursor).OfType<CrashingEvent>().FirstOrDefault() is { } crash
+        )
         {
             evidence.Note($"the game reported an unhandled exception but kept running: {FirstLine(crash.Message)}");
         }
@@ -247,14 +264,17 @@ internal sealed class GroupRun : IAsyncDisposable
                 failure = restarting
                     ? new TimeoutException(
                         $"the test did not finish within {test.Attribute.TimeoutSeconds} s: the game was still "
-                        + "restarting after the reset failed",
-                        failedReset)
+                            + "restarting after the reset failed",
+                        failedReset
+                    )
                     : new TimeoutException(
                         $"the test did not finish within {test.Attribute.TimeoutSeconds} s",
-                        failure is OperationCanceledException ? null : failure);
+                        failure is OperationCanceledException ? null : failure
+                    );
             }
 
-            outcome = timedOut && restarting ? TestOutcome.TimedOut
+            outcome =
+                timedOut && restarting ? TestOutcome.TimedOut
                 : restarting ? TestOutcome.Error
                 : game is null || !IsAlive(game) ? TestOutcome.Crashed
                 : timedOut ? TestOutcome.TimedOut
@@ -271,7 +291,12 @@ internal sealed class GroupRun : IAsyncDisposable
         return await ReportAsync(test, outcome, clock.Elapsed, failure, evidence);
     }
 
-    private async Task RunBodyAsync(KspSuite suite, MethodInfo method, SuiteTest test, CancellationToken cancellationToken)
+    private async Task RunBodyAsync(
+        KspSuite suite,
+        MethodInfo method,
+        SuiteTest test,
+        CancellationToken cancellationToken
+    )
     {
         try
         {
@@ -287,7 +312,8 @@ internal sealed class GroupRun : IAsyncDisposable
         }
 
         suite.TestStart = suite.Game.Log.Cursor;
-        var task = (Task?)method.Invoke(suite, null)
+        var task =
+            (Task?)method.Invoke(suite, null)
             ?? throw new InvalidOperationException($"{test.FullName} returned no task");
         await task;
     }
@@ -340,7 +366,8 @@ internal sealed class GroupRun : IAsyncDisposable
         var session = await GameSession.LaunchAsync(
             instance!,
             new LaunchOptions { HarnessHome = home.Root, PlayerLogPath = playerLog },
-            cancellationToken);
+            cancellationToken
+        );
         var connected = clock.Elapsed;
         session.Popups = popups;
 
@@ -361,7 +388,9 @@ internal sealed class GroupRun : IAsyncDisposable
             }
 
             throw new InvalidOperationException(
-                $"the game did not reach the main menu; dialogs it showed while loading: {string.Join(", ", dialogs)}", e);
+                $"the game did not reach the main menu; dialogs it showed while loading: {string.Join(", ", dialogs)}",
+                e
+            );
         }
         finally
         {
@@ -372,8 +401,9 @@ internal sealed class GroupRun : IAsyncDisposable
         Summary.Boots.Add(new GameBoot(Seconds(connected), Seconds(clock.Elapsed), pid, playerLog));
         await output.WriteLineAsync(
             $"  game {number} (pid {pid}, {(session.Info.Retooled ? "Retooled" : "stock")} {session.Info.Ksp}, "
-            + $"Unity {session.Info.Unity}): connected after {SuiteRunner.FormatDuration(connected)}, "
-            + $"main menu after {SuiteRunner.FormatDuration(clock.Elapsed)}");
+                + $"Unity {session.Info.Unity}): connected after {SuiteRunner.FormatDuration(connected)}, "
+                + $"main menu after {SuiteRunner.FormatDuration(clock.Elapsed)}"
+        );
 
         game = session;
         testsOnGame = 0;
@@ -405,7 +435,12 @@ internal sealed class GroupRun : IAsyncDisposable
         }
     }
 
-    private async Task CollectEvidenceAsync(TestEvidence evidence, Exception failure, GameSession firstGame, long firstCursor)
+    private async Task CollectEvidenceAsync(
+        TestEvidence evidence,
+        Exception failure,
+        GameSession firstGame,
+        long firstCursor
+    )
     {
         evidence.Write("exception.txt", failure.ToString());
         ApprovalEvidence.Collect(evidence, failure);
@@ -432,7 +467,9 @@ internal sealed class GroupRun : IAsyncDisposable
         var crash = firstGame.Log.Since(firstCursor).OfType<CrashingEvent>().FirstOrDefault();
         if (crash is not null)
         {
-            evidence.Note($"the game reported an unhandled exception on a background thread: {FirstLine(crash.Message)}");
+            evidence.Note(
+                $"the game reported an unhandled exception on a background thread: {FirstLine(crash.Message)}"
+            );
         }
 
         if (game is null || !IsAlive(game))
@@ -455,7 +492,12 @@ internal sealed class GroupRun : IAsyncDisposable
 
         try
         {
-            using var stream = new FileStream(gamePlayerLog, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+            using var stream = new FileStream(
+                gamePlayerLog,
+                FileMode.Open,
+                FileAccess.Read,
+                FileShare.ReadWrite | FileShare.Delete
+            );
             using var reader = new StreamReader(stream);
             var tail = new Queue<string>();
             while (reader.ReadLine() is { } line)
@@ -468,8 +510,12 @@ internal sealed class GroupRun : IAsyncDisposable
                 tail.Enqueue(line);
             }
 
-            evidence.Write("player-log-tail.txt", $"(last {tail.Count} lines of {gamePlayerLog})"
-                + Environment.NewLine + string.Join(Environment.NewLine, tail));
+            evidence.Write(
+                "player-log-tail.txt",
+                $"(last {tail.Count} lines of {gamePlayerLog})"
+                    + Environment.NewLine
+                    + string.Join(Environment.NewLine, tail)
+            );
         }
         catch (IOException e)
         {
@@ -482,7 +528,8 @@ internal sealed class GroupRun : IAsyncDisposable
         TestOutcome outcome,
         TimeSpan time,
         Exception? failure,
-        TestEvidence? evidence)
+        TestEvidence? evidence
+    )
     {
         var label = outcome switch
         {
@@ -568,11 +615,23 @@ internal sealed class GroupRun : IAsyncDisposable
 
                     break;
                 case SceneEvent scene:
-                    text.Append("[scene] ").Append(scene.From).Append(" -> ").Append(scene.To).Append(' ').Append(scene.Phase);
+                    text.Append("[scene] ")
+                        .Append(scene.From)
+                        .Append(" -> ")
+                        .Append(scene.To)
+                        .Append(' ')
+                        .Append(scene.Phase);
                     break;
                 case DialogEvent dialog:
-                    text.Append("[dialog] ").Append(dialog.Name).Append(": ").Append(dialog.Title).Append(" | ")
-                        .Append(dialog.Message).Append(" [").Append(string.Join(", ", dialog.Buttons)).Append(']');
+                    text.Append("[dialog] ")
+                        .Append(dialog.Name)
+                        .Append(": ")
+                        .Append(dialog.Title)
+                        .Append(" | ")
+                        .Append(dialog.Message)
+                        .Append(" [")
+                        .Append(string.Join(", ", dialog.Buttons))
+                        .Append(']');
                     break;
                 case CrashingEvent crash:
                     text.Append("[crashing] ").Append(crash.Message);

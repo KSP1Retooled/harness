@@ -39,7 +39,14 @@ public sealed class SessionFileTests
         using var self = Process.GetCurrentProcess();
         var started = self.StartTime.ToUniversalTime();
 
-        var current = new SessionFile { Pid = self.Id, Port = 1, Token = "", Instance = "x", StartedUtc = started };
+        var current = new SessionFile
+        {
+            Pid = self.Id,
+            Port = 1,
+            Token = "",
+            Instance = "x",
+            StartedUtc = started,
+        };
         var reused = current with { StartedUtc = started.AddHours(-1) };
 
         Assert.True(current.IsAlive());
@@ -94,7 +101,13 @@ public sealed class SessionFileTests
         var folder = Directory.CreateTempSubdirectory("ksph-tests-").FullName;
         try
         {
-            var session = new SessionFile { Pid = 1, Port = 2, Token = "t", Instance = folder };
+            var session = new SessionFile
+            {
+                Pid = 1,
+                Port = 2,
+                Token = "t",
+                Instance = folder,
+            };
             session.Write();
             (session with { Pid = 3 }).Write();
 

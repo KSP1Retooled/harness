@@ -64,7 +64,9 @@ public sealed class SnippetTextTests
     [Fact]
     public void Leading_usings_become_snippet_usings_and_keep_their_lines()
     {
-        var text = SnippetText.Parse("using KSP.UI.Screens.Flight;\n// note\nusing static System.Math;\nusing M = System.Math;\nreturn Abs(-1);");
+        var text = SnippetText.Parse(
+            "using KSP.UI.Screens.Flight;\n// note\nusing static System.Math;\nusing M = System.Math;\nreturn Abs(-1);"
+        );
 
         Assert.Equal(["KSP.UI.Screens.Flight", "static System.Math", "M = System.Math"], text.Usings);
         Assert.Equal("\n// note\n\n\nreturn Abs(-1);", text.Body);
@@ -125,16 +127,24 @@ public sealed class SnippetTextTests
         var runtime = Path.GetDirectoryName(typeof(object).Assembly.Location)!;
         var compilation = Microsoft.CodeAnalysis.CSharp.CSharpCompilation.Create(
             "snippet",
-            [Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(
-                source, cancellationToken: TestContext.Current.CancellationToken)],
+            [
+                Microsoft.CodeAnalysis.CSharp.CSharpSyntaxTree.ParseText(
+                    source,
+                    cancellationToken: TestContext.Current.CancellationToken
+                ),
+            ],
             [
                 Microsoft.CodeAnalysis.MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
                 Microsoft.CodeAnalysis.MetadataReference.CreateFromFile(typeof(Console).Assembly.Location),
                 Microsoft.CodeAnalysis.MetadataReference.CreateFromFile(Path.Combine(runtime, "System.Runtime.dll")),
             ],
-            new Microsoft.CodeAnalysis.CSharp.CSharpCompilationOptions(Microsoft.CodeAnalysis.OutputKind.DynamicallyLinkedLibrary));
+            new Microsoft.CodeAnalysis.CSharp.CSharpCompilationOptions(
+                Microsoft.CodeAnalysis.OutputKind.DynamicallyLinkedLibrary
+            )
+        );
 
-        var errors = compilation.GetDiagnostics(TestContext.Current.CancellationToken)
+        var errors = compilation
+            .GetDiagnostics(TestContext.Current.CancellationToken)
             .Where(d => d.Severity == Microsoft.CodeAnalysis.DiagnosticSeverity.Error)
             .Select(d => d.ToString())
             .ToList();

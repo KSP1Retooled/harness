@@ -14,8 +14,7 @@ public static class Screenshot
     /// <paramref name="superSize"/> above 1 renders the scene's cameras again that many times larger, without KSP's
     /// UI, and throws <see cref="InvalidOperationException"/> when that comes out black while the screen does not.
     /// </summary>
-    public static ScriptAwaitable<byte[]> Capture(int superSize = 1) =>
-        new CaptureAwaitable(CheckSuperSize(superSize));
+    public static ScriptAwaitable<byte[]> Capture(int superSize = 1) => new CaptureAwaitable(CheckSuperSize(superSize));
 
     /// <summary>
     /// Like <see cref="Capture(int)"/>, but writes the PNG to <paramref name="path"/> (relative paths are under the
@@ -45,8 +44,9 @@ public static class Screenshot
             {
                 throw new InvalidOperationException(
                     $"Screenshot.Capture with superSize {superSize} rendered a black image while the screen shows "
-                    + "something: supersized captures render the scene's cameras again without the UI, so a screen "
-                    + "made only of UI (a loading screen, a scene switch) comes out black. Use superSize 1 here.");
+                        + "something: supersized captures render the scene's cameras again without the UI, so a screen "
+                        + "made only of UI (a loading screen, a scene switch) comes out black. Use superSize 1 here."
+                );
             }
 
             return texture.EncodeToPNG();

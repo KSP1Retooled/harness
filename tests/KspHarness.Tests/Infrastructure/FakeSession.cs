@@ -26,7 +26,13 @@ internal sealed class FakeSession : IAsyncDisposable
             ModAssemblyPath = install is null ? null : TestInstalls.ModStandIn(install),
         };
 
-        var session = await GameSession.ConnectAsync(game.Port, game.Token, instanceDir, options, TestContext.Current.CancellationToken);
+        var session = await GameSession.ConnectAsync(
+            game.Port,
+            game.Token,
+            instanceDir,
+            options,
+            TestContext.Current.CancellationToken
+        );
         return new FakeSession(game, session);
     }
 

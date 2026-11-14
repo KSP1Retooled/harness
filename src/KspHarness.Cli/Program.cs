@@ -67,7 +67,8 @@ public static class Program
         TextReader stdin,
         TextWriter stdout,
         TextWriter stderr,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         var command = args.Length == 0 ? "help" : args[0];
         var rest = args.Skip(1).ToArray();
@@ -107,7 +108,12 @@ public static class Program
         }
     }
 
-    private static async Task<int> InstanceAsync(string[] args, TextWriter stdout, TextWriter stderr, CancellationToken cancellationToken)
+    private static async Task<int> InstanceAsync(
+        string[] args,
+        TextWriter stdout,
+        TextWriter stderr,
+        CancellationToken cancellationToken
+    )
     {
         var verb = args.Length == 0 ? "" : args[0];
         switch (verb)
@@ -121,7 +127,8 @@ public static class Program
                     line.List("--ckan"),
                     Home(line),
                     stderr.WriteLine,
-                    cancellationToken);
+                    cancellationToken
+                );
                 stdout.WriteLine(instance.Root);
                 return 0;
             }
@@ -133,9 +140,10 @@ public static class Program
                 {
                     var session = SessionFile.Read(instance.Root, stderr.WriteLine);
                     var running = session is not null && session.IsAlive() ? $"  running pid {session.Pid}" : "";
-                    var mods = instance.Record.Ckan.Count == 0
-                        ? "no CKAN modules"
-                        : string.Join(", ", instance.Record.Ckan.Select(m => m.Identifier));
+                    var mods =
+                        instance.Record.Ckan.Count == 0
+                            ? "no CKAN modules"
+                            : string.Join(", ", instance.Record.Ckan.Select(m => m.Identifier));
                     stdout.WriteLine($"{instance.Root}  {instance.Record.StartKind}  {mods}{running}");
                 }
 
@@ -147,12 +155,16 @@ public static class Program
         }
     }
 
-    private static async Task<int> LaunchAsync(string[] args, TextWriter stdout, TextWriter stderr, CancellationToken cancellationToken)
+    private static async Task<int> LaunchAsync(
+        string[] args,
+        TextWriter stdout,
+        TextWriter stderr,
+        CancellationToken cancellationToken
+    )
     {
-        var line = CommandLine.Parse(
-            args,
-            ["--instance", "--width", "--height", "--timeout"],
-            ["--windowed", "--wait-menu"]).AtMost(0);
+        var line = CommandLine
+            .Parse(args, ["--instance", "--width", "--height", "--timeout"], ["--windowed", "--wait-menu"])
+            .AtMost(0);
         var windowed = line.Has("--windowed");
         var request = new LaunchRequest
         {
@@ -185,7 +197,8 @@ public static class Program
         TextReader stdin,
         TextWriter stdout,
         TextWriter stderr,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         var line = CommandLine.Parse(args, ["--instance", "-e", "--timeout"], ["--raw"]).AtMost(1);
         var inline = line.Value("-e");
@@ -196,8 +209,13 @@ public static class Program
         }
 
         var file = fromFile ? Path.GetFullPath(line.Positionals[0]) : null;
-        var code = inline
-            ?? (file is not null ? await File.ReadAllTextAsync(file, cancellationToken) : await stdin.ReadToEndAsync(cancellationToken));
+        var code =
+            inline
+            ?? (
+                file is not null
+                    ? await File.ReadAllTextAsync(file, cancellationToken)
+                    : await stdin.ReadToEndAsync(cancellationToken)
+            );
         var timeout = line.Int("--timeout") is { } seconds ? TimeSpan.FromSeconds(seconds) : (TimeSpan?)null;
 
         await using var game = await GameControl.AttachAsync(line.Required("--instance"), cancellationToken);
@@ -220,7 +238,8 @@ public static class Program
         TextReader stdin,
         TextWriter stdout,
         TextWriter stderr,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         var instance = InstanceArgument(CommandLine.Parse(args, ["--instance"]));
         await using var game = await GameControl.AttachAsync(instance, cancellationToken);
@@ -253,8 +272,6 @@ public static class Program
         }
 
         line.AtMost(1);
-        return line.Positionals.Count == 1
-            ? line.Positionals[0]
-            : throw new UsageException("name the instance folder");
+        return line.Positionals.Count == 1 ? line.Positionals[0] : throw new UsageException("name the instance folder");
     }
 }

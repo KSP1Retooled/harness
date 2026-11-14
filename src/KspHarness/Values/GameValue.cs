@@ -170,14 +170,16 @@ public sealed class GameValue
 
     private static bool IsNumeric(Type type)
     {
-        return type == typeof(double) || type == typeof(float) || type == typeof(decimal)
+        return type == typeof(double)
+            || type == typeof(float)
+            || type == typeof(decimal)
             || Values.ValueEncoder.IsInteger(type);
     }
 
     private static object ConvertArray(JsonArray array, Type type, GameSession? session)
     {
-        var elementType = ElementType(type)
-            ?? throw new InvalidCastException($"the game returned an array, which is not a {type}");
+        var elementType =
+            ElementType(type) ?? throw new InvalidCastException($"the game returned an array, which is not a {type}");
 
         if (type.IsArray || type.IsInterface)
         {
@@ -193,7 +195,8 @@ public sealed class GameValue
             }
         }
 
-        var list = (IList)Activator.CreateInstance(type.IsInterface ? typeof(List<>).MakeGenericType(elementType) : type)!;
+        var list = (IList)
+            Activator.CreateInstance(type.IsInterface ? typeof(List<>).MakeGenericType(elementType) : type)!;
         foreach (var item in array)
         {
             list.Add(Convert(item, elementType, session));
@@ -212,9 +215,14 @@ public sealed class GameValue
         if (type.IsGenericType)
         {
             var definition = type.GetGenericTypeDefinition();
-            if (definition == typeof(List<>) || definition == typeof(IList<>) || definition == typeof(IEnumerable<>)
-                || definition == typeof(IReadOnlyList<>) || definition == typeof(IReadOnlyCollection<>)
-                || definition == typeof(ICollection<>))
+            if (
+                definition == typeof(List<>)
+                || definition == typeof(IList<>)
+                || definition == typeof(IEnumerable<>)
+                || definition == typeof(IReadOnlyList<>)
+                || definition == typeof(IReadOnlyCollection<>)
+                || definition == typeof(ICollection<>)
+            )
             {
                 return type.GetGenericArguments()[0];
             }
@@ -261,7 +269,8 @@ public sealed class GameValue
 
                 throw new InvalidCastException(
                     $"the game returned a {obj["type"]}, which stays in the game and can't become a {type}. "
-                    + "Return the values you need from the snippet, or ask for a Handle.");
+                        + "Return the values you need from the snippet, or ask for a Handle."
+                );
             case "obj":
                 return ConvertObject(obj["fields"] as JsonObject ?? [], type, session);
             case null:
@@ -330,13 +339,15 @@ public sealed class GameValue
         }
 
         var instance = Activator.CreateInstance(type)!;
-        string[] names = obj["type"]?.GetValue<string>()?.StartsWith("Color", StringComparison.Ordinal) == true
-            ? ["r", "g", "b", "a"]
-            : ["x", "y", "z", "w"];
+        string[] names =
+            obj["type"]?.GetValue<string>()?.StartsWith("Color", StringComparison.Ordinal) == true
+                ? ["r", "g", "b", "a"]
+                : ["x", "y", "z", "w"];
 
         for (var i = 0; i < components.Length; i++)
         {
-            var member = FindMember(type, names[i])
+            var member =
+                FindMember(type, names[i])
                 ?? throw new InvalidCastException($"the game returned a {obj["type"]}, but {type} has no '{names[i]}'");
             SetMember(instance, member, ConvertDoubleTo(components[i], MemberType(member)));
         }
@@ -353,7 +364,9 @@ public sealed class GameValue
 
         if (DictionaryValueType(type) is { } valueType)
         {
-            var dictionaryType = type.IsInterface ? typeof(Dictionary<,>).MakeGenericType(typeof(string), valueType) : type;
+            var dictionaryType = type.IsInterface
+                ? typeof(Dictionary<,>).MakeGenericType(typeof(string), valueType)
+                : type;
             var dictionary = (IDictionary)Activator.CreateInstance(dictionaryType)!;
             foreach (var (key, value) in fields)
             {
@@ -425,8 +438,14 @@ public sealed class GameValue
 
         var definition = type.GetGenericTypeDefinition();
         var arguments = type.GetGenericArguments();
-        if ((definition == typeof(Dictionary<,>) || definition == typeof(IDictionary<,>)
-                || definition == typeof(IReadOnlyDictionary<,>)) && arguments[0] == typeof(string))
+        if (
+            (
+                definition == typeof(Dictionary<,>)
+                || definition == typeof(IDictionary<,>)
+                || definition == typeof(IReadOnlyDictionary<,>)
+            )
+            && arguments[0] == typeof(string)
+        )
         {
             return arguments[1];
         }
@@ -483,7 +502,8 @@ public sealed class GameValue
             obj["type"]?.GetValue<string>() ?? "System.Object",
             obj["assembly"]?.GetValue<string>(),
             obj["text"]?.GetValue<string>(),
-            session);
+            session
+        );
     }
 
     internal static object? ToDynamic(JsonNode? node, GameSession? session)

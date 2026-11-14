@@ -26,7 +26,8 @@ public sealed partial class GameSession
         RunOptions? options = null,
         CancellationToken cancellationToken = default,
         [CallerFilePath] string file = "",
-        [CallerLineNumber] int line = 0)
+        [CallerLineNumber] int line = 0
+    )
     {
         options ??= RunOptions.Default;
         var snippet = SnippetBuilder.FromString(source, returnsValue: true, options.Usings, file, line);
@@ -43,11 +44,14 @@ public sealed partial class GameSession
         RunOptions? options,
         CancellationToken cancellationToken,
         [CallerFilePath] string file = "",
-        [CallerLineNumber] int line = 0)
+        [CallerLineNumber] int line = 0
+    )
     {
         options ??= RunOptions.Default;
-        var snippet = SnippetBuilder.FromString(source, returnsValue: true, options.Usings, file, line)
-            with { Arguments = arguments };
+        var snippet = SnippetBuilder.FromString(source, returnsValue: true, options.Usings, file, line) with
+        {
+            Arguments = arguments,
+        };
         return Decode<T>(await RunAsync(snippet, options, keep: false, cancellationToken));
     }
 
@@ -57,7 +61,8 @@ public sealed partial class GameSession
         RunOptions? options = null,
         CancellationToken cancellationToken = default,
         [CallerFilePath] string file = "",
-        [CallerLineNumber] int line = 0)
+        [CallerLineNumber] int line = 0
+    )
     {
         options ??= RunOptions.Default;
         var snippet = SnippetBuilder.FromString(source, returnsValue: false, options.Usings, file, line);
@@ -70,9 +75,19 @@ public sealed partial class GameSession
         CancellationToken cancellationToken = default,
         [CallerArgumentExpression(nameof(lambda))] string? text = null,
         [CallerFilePath] string file = "",
-        [CallerLineNumber] int line = 0)
+        [CallerLineNumber] int line = 0
+    )
     {
-        var node = await RunLambdaAsync(lambda, text, dynamicParameter: false, options, keep: false, file, line, cancellationToken);
+        var node = await RunLambdaAsync(
+            lambda,
+            text,
+            dynamicParameter: false,
+            options,
+            keep: false,
+            file,
+            line,
+            cancellationToken
+        );
         return Decode<T>(node);
     }
 
@@ -82,9 +97,19 @@ public sealed partial class GameSession
         CancellationToken cancellationToken = default,
         [CallerArgumentExpression(nameof(lambda))] string? text = null,
         [CallerFilePath] string file = "",
-        [CallerLineNumber] int line = 0)
+        [CallerLineNumber] int line = 0
+    )
     {
-        var node = await RunLambdaAsync(lambda, text, dynamicParameter: false, options, keep: false, file, line, cancellationToken);
+        var node = await RunLambdaAsync(
+            lambda,
+            text,
+            dynamicParameter: false,
+            options,
+            keep: false,
+            file,
+            line,
+            cancellationToken
+        );
         return Decode<T>(node);
     }
 
@@ -94,9 +119,19 @@ public sealed partial class GameSession
         CancellationToken cancellationToken = default,
         [CallerArgumentExpression(nameof(lambda))] string? text = null,
         [CallerFilePath] string file = "",
-        [CallerLineNumber] int line = 0)
+        [CallerLineNumber] int line = 0
+    )
     {
-        return RunLambdaAsync(lambda, text, dynamicParameter: false, options, keep: false, file, line, cancellationToken);
+        return RunLambdaAsync(
+            lambda,
+            text,
+            dynamicParameter: false,
+            options,
+            keep: false,
+            file,
+            line,
+            cancellationToken
+        );
     }
 
     public Task Run(
@@ -105,9 +140,19 @@ public sealed partial class GameSession
         CancellationToken cancellationToken = default,
         [CallerArgumentExpression(nameof(lambda))] string? text = null,
         [CallerFilePath] string file = "",
-        [CallerLineNumber] int line = 0)
+        [CallerLineNumber] int line = 0
+    )
     {
-        return RunLambdaAsync(lambda, text, dynamicParameter: false, options, keep: false, file, line, cancellationToken);
+        return RunLambdaAsync(
+            lambda,
+            text,
+            dynamicParameter: false,
+            options,
+            keep: false,
+            file,
+            line,
+            cancellationToken
+        );
     }
 
     /// <summary>
@@ -120,9 +165,19 @@ public sealed partial class GameSession
         CancellationToken cancellationToken = default,
         [CallerArgumentExpression(nameof(lambda))] string? text = null,
         [CallerFilePath] string file = "",
-        [CallerLineNumber] int line = 0)
+        [CallerLineNumber] int line = 0
+    )
     {
-        var node = await RunLambdaAsync(lambda, text, dynamicParameter: true, options, keep: false, file, line, cancellationToken);
+        var node = await RunLambdaAsync(
+            lambda,
+            text,
+            dynamicParameter: true,
+            options,
+            keep: false,
+            file,
+            line,
+            cancellationToken
+        );
         return GameValue.ToDynamic(node, this);
     }
 
@@ -132,9 +187,19 @@ public sealed partial class GameSession
         CancellationToken cancellationToken = default,
         [CallerArgumentExpression(nameof(lambda))] string? text = null,
         [CallerFilePath] string file = "",
-        [CallerLineNumber] int line = 0)
+        [CallerLineNumber] int line = 0
+    )
     {
-        var node = await RunLambdaAsync(lambda, text, dynamicParameter: true, options, keep: false, file, line, cancellationToken);
+        var node = await RunLambdaAsync(
+            lambda,
+            text,
+            dynamicParameter: true,
+            options,
+            keep: false,
+            file,
+            line,
+            cancellationToken
+        );
         return GameValue.ToDynamic(node, this);
     }
 
@@ -144,9 +209,19 @@ public sealed partial class GameSession
         CancellationToken cancellationToken = default,
         [CallerArgumentExpression(nameof(lambda))] string? text = null,
         [CallerFilePath] string file = "",
-        [CallerLineNumber] int line = 0)
+        [CallerLineNumber] int line = 0
+    )
     {
-        return RunLambdaAsync(lambda, text, dynamicParameter: true, options, keep: false, file, line, cancellationToken);
+        return RunLambdaAsync(
+            lambda,
+            text,
+            dynamicParameter: true,
+            options,
+            keep: false,
+            file,
+            line,
+            cancellationToken
+        );
     }
 
     public Task Run(
@@ -155,9 +230,19 @@ public sealed partial class GameSession
         CancellationToken cancellationToken = default,
         [CallerArgumentExpression(nameof(lambda))] string? text = null,
         [CallerFilePath] string file = "",
-        [CallerLineNumber] int line = 0)
+        [CallerLineNumber] int line = 0
+    )
     {
-        return RunLambdaAsync(lambda, text, dynamicParameter: true, options, keep: false, file, line, cancellationToken);
+        return RunLambdaAsync(
+            lambda,
+            text,
+            dynamicParameter: true,
+            options,
+            keep: false,
+            file,
+            line,
+            cancellationToken
+        );
     }
 
     /// <summary>Runs a method body and keeps its result in the game, returning a handle to it.</summary>
@@ -166,7 +251,8 @@ public sealed partial class GameSession
         RunOptions? options = null,
         CancellationToken cancellationToken = default,
         [CallerFilePath] string file = "",
-        [CallerLineNumber] int line = 0)
+        [CallerLineNumber] int line = 0
+    )
     {
         options ??= RunOptions.Default;
         var snippet = SnippetBuilder.FromString(source, returnsValue: true, options.Usings, file, line);
@@ -179,9 +265,19 @@ public sealed partial class GameSession
         CancellationToken cancellationToken = default,
         [CallerArgumentExpression(nameof(lambda))] string? text = null,
         [CallerFilePath] string file = "",
-        [CallerLineNumber] int line = 0)
+        [CallerLineNumber] int line = 0
+    )
     {
-        var node = await RunLambdaAsync(lambda, text, dynamicParameter: false, options, keep: true, file, line, cancellationToken);
+        var node = await RunLambdaAsync(
+            lambda,
+            text,
+            dynamicParameter: false,
+            options,
+            keep: true,
+            file,
+            line,
+            cancellationToken
+        );
         return Decode<Handle?>(node);
     }
 
@@ -191,9 +287,19 @@ public sealed partial class GameSession
         CancellationToken cancellationToken = default,
         [CallerArgumentExpression(nameof(lambda))] string? text = null,
         [CallerFilePath] string file = "",
-        [CallerLineNumber] int line = 0)
+        [CallerLineNumber] int line = 0
+    )
     {
-        var node = await RunLambdaAsync(lambda, text, dynamicParameter: false, options, keep: true, file, line, cancellationToken);
+        var node = await RunLambdaAsync(
+            lambda,
+            text,
+            dynamicParameter: false,
+            options,
+            keep: true,
+            file,
+            line,
+            cancellationToken
+        );
         return Decode<Handle?>(node);
     }
 
@@ -203,9 +309,19 @@ public sealed partial class GameSession
         CancellationToken cancellationToken = default,
         [CallerArgumentExpression(nameof(lambda))] string? text = null,
         [CallerFilePath] string file = "",
-        [CallerLineNumber] int line = 0)
+        [CallerLineNumber] int line = 0
+    )
     {
-        var node = await RunLambdaAsync(lambda, text, dynamicParameter: true, options, keep: true, file, line, cancellationToken);
+        var node = await RunLambdaAsync(
+            lambda,
+            text,
+            dynamicParameter: true,
+            options,
+            keep: true,
+            file,
+            line,
+            cancellationToken
+        );
         return Decode<Handle?>(node);
     }
 
@@ -215,9 +331,19 @@ public sealed partial class GameSession
         CancellationToken cancellationToken = default,
         [CallerArgumentExpression(nameof(lambda))] string? text = null,
         [CallerFilePath] string file = "",
-        [CallerLineNumber] int line = 0)
+        [CallerLineNumber] int line = 0
+    )
     {
-        var node = await RunLambdaAsync(lambda, text, dynamicParameter: true, options, keep: true, file, line, cancellationToken);
+        var node = await RunLambdaAsync(
+            lambda,
+            text,
+            dynamicParameter: true,
+            options,
+            keep: true,
+            file,
+            line,
+            cancellationToken
+        );
         return Decode<Handle?>(node);
     }
 
@@ -231,7 +357,8 @@ public sealed partial class GameSession
         bool keep,
         string file,
         int line,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         options ??= RunOptions.Default;
         var snippet = SnippetBuilder.FromLambda(
@@ -241,7 +368,8 @@ public sealed partial class GameSession
             options.Usings,
             file,
             line,
-            Compiler.References.BaseCompilation);
+            Compiler.References.BaseCompilation
+        );
 
         return RunAsync(snippet, options, keep, cancellationToken);
     }
@@ -250,7 +378,8 @@ public sealed partial class GameSession
         PreparedSnippet snippet,
         RunOptions options,
         bool keep,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         // Roslyn work is CPU-bound and slow the first time; keep it off the caller's context.
         var compiled = await Task.Run(() => Compiler.Compile(snippet.Source), cancellationToken);
@@ -304,7 +433,8 @@ public sealed partial class GameSession
         IReadOnlyList<object?> arguments,
         RunOptions options,
         bool keep,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
     {
         var parameters = new JsonObject
         {
@@ -350,12 +480,13 @@ public sealed partial class GameSession
                     connection.Abandon(id);
                     throw new OperationCanceledException(
                         $"cancelled; the game did not confirm the cancel within {CancelGrace}",
-                        cancellationToken);
+                        cancellationToken
+                    );
                 }
             }
         }
-        catch (OperationCanceledException e) when (cancellationToken.IsCancellationRequested
-            && e.CancellationToken != cancellationToken)
+        catch (OperationCanceledException e)
+            when (cancellationToken.IsCancellationRequested && e.CancellationToken != cancellationToken)
         {
             throw new OperationCanceledException(e.Message, e, cancellationToken);
         }

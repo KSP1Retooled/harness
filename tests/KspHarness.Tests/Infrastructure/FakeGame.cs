@@ -49,7 +49,8 @@ internal sealed class FakeGame : IAsyncDisposable
     public List<JsonObject> BufferedEvents { get; } = [];
 
     /// <summary>Answers a run: the returned node is the result's <c>value</c>; a <see cref="FakeError"/> is an error.</summary>
-    public Func<JsonObject, CancellationToken, Task<JsonNode?>> OnRun { get; set; } = (_, _) => Task.FromResult<JsonNode?>(null);
+    public Func<JsonObject, CancellationToken, Task<JsonNode?>> OnRun { get; set; } =
+        (_, _) => Task.FromResult<JsonNode?>(null);
 
     /// <summary>When true, the game forgets loaded assemblies before the next run, as after a restart.</summary>
     public bool ForgetLoadedOnce { get; set; }
@@ -78,7 +79,14 @@ internal sealed class FakeGame : IAsyncDisposable
             parameters[key] = value;
         }
 
-        await WriteAsync(new JsonObject { ["jsonrpc"] = "2.0", ["method"] = "event", ["params"] = parameters });
+        await WriteAsync(
+            new JsonObject
+            {
+                ["jsonrpc"] = "2.0",
+                ["method"] = "event",
+                ["params"] = parameters,
+            }
+        );
     }
 
     public async ValueTask DisposeAsync()
@@ -129,17 +137,20 @@ internal sealed class FakeGame : IAsyncDisposable
                     return;
                 }
 
-                await ReplyAsync(id, new JsonObject
-                {
-                    ["protocol"] = 1,
-                    ["pid"] = 4242,
-                    ["ksp"] = "1.12.5",
-                    ["retooled"] = false,
-                    ["unity"] = "2019.4.18f1",
-                    ["scene"] = "MAINMENU",
-                    ["loaded"] = true,
-                    ["logCursor"] = BufferedEvents.Count,
-                });
+                await ReplyAsync(
+                    id,
+                    new JsonObject
+                    {
+                        ["protocol"] = 1,
+                        ["pid"] = 4242,
+                        ["ksp"] = "1.12.5",
+                        ["retooled"] = false,
+                        ["unity"] = "2019.4.18f1",
+                        ["scene"] = "MAINMENU",
+                        ["loaded"] = true,
+                        ["logCursor"] = BufferedEvents.Count,
+                    }
+                );
 
                 foreach (var buffered in BufferedEvents)
                 {
@@ -148,7 +159,9 @@ internal sealed class FakeGame : IAsyncDisposable
 
                 return;
             case "load":
-                Loaded[parameters["hash"]!.GetValue<string>()] = Convert.FromBase64String(parameters["assembly"]!.GetValue<string>());
+                Loaded[parameters["hash"]!.GetValue<string>()] = Convert.FromBase64String(
+                    parameters["assembly"]!.GetValue<string>()
+                );
                 await ReplyAsync(id, new JsonObject());
                 return;
             case "run":
@@ -210,17 +223,31 @@ internal sealed class FakeGame : IAsyncDisposable
 
     private Task ReplyAsync(long id, JsonNode? result)
     {
-        return WriteAsync(new JsonObject { ["jsonrpc"] = "2.0", ["id"] = id, ["result"] = result });
+        return WriteAsync(
+            new JsonObject
+            {
+                ["jsonrpc"] = "2.0",
+                ["id"] = id,
+                ["result"] = result,
+            }
+        );
     }
 
     private Task ReplyErrorAsync(long id, FakeError error)
     {
-        return WriteAsync(new JsonObject
-        {
-            ["jsonrpc"] = "2.0",
-            ["id"] = id,
-            ["error"] = new JsonObject { ["code"] = error.Code, ["message"] = error.Message, ["data"] = error.ErrorData },
-        });
+        return WriteAsync(
+            new JsonObject
+            {
+                ["jsonrpc"] = "2.0",
+                ["id"] = id,
+                ["error"] = new JsonObject
+                {
+                    ["code"] = error.Code,
+                    ["message"] = error.Message,
+                    ["data"] = error.ErrorData,
+                },
+            }
+        );
     }
 
     private async Task WriteAsync(JsonObject message)

@@ -80,11 +80,14 @@ internal static class ValueEncoder
 
         if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(KeyValuePair<,>))
         {
-            return Object(type, new JsonObject
-            {
-                { "Key", Encode(type.GetProperty("Key").GetValue(value, null), handles, depth + 1) },
-                { "Value", Encode(type.GetProperty("Value").GetValue(value, null), handles, depth + 1) },
-            });
+            return Object(
+                type,
+                new JsonObject
+                {
+                    { "Key", Encode(type.GetProperty("Key").GetValue(value, null), handles, depth + 1) },
+                    { "Value", Encode(type.GetProperty("Value").GetValue(value, null), handles, depth + 1) },
+                }
+            );
         }
 
         if (IsValueTuple(type))
@@ -186,11 +189,21 @@ internal static class ValueEncoder
             components.Add(Number(Convert.ToDouble(component, CultureInfo.InvariantCulture)));
         }
 
-        return new JsonObject { { "$", "vec" }, { "type", type.Name }, { "v", components } };
+        return new JsonObject
+        {
+            { "$", "vec" },
+            { "type", type.Name },
+            { "v", components },
+        };
     }
 
     private static JsonObject Object(Type type, JsonObject fields) =>
-        new JsonObject { { "$", "obj" }, { "type", TypeName(type) }, { "fields", fields } };
+        new JsonObject
+        {
+            { "$", "obj" },
+            { "type", TypeName(type) },
+            { "fields", fields },
+        };
 
     private static JsonObject Members(object value, Type type, HandleRegistry handles, int depth)
     {
@@ -233,16 +246,20 @@ internal static class ValueEncoder
     }
 
     private static bool IsValueTuple(Type type) =>
-        type.IsValueType && type.IsGenericType && type.FullName != null
+        type.IsValueType
+        && type.IsGenericType
+        && type.FullName != null
         && type.FullName.StartsWith("System.ValueTuple`", StringComparison.Ordinal);
 
     private static bool HasStringKeys(Type type)
     {
         foreach (Type implemented in type.GetInterfaces())
         {
-            if (implemented.IsGenericType
+            if (
+                implemented.IsGenericType
                 && implemented.GetGenericTypeDefinition() == typeof(IDictionary<,>)
-                && implemented.GetGenericArguments()[0] == typeof(string))
+                && implemented.GetGenericArguments()[0] == typeof(string)
+            )
                 return true;
         }
 

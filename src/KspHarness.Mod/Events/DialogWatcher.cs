@@ -18,8 +18,10 @@ internal sealed class DialogWatcher
     private const float PollIntervalSeconds = 0.25f;
 
     // Every dialog that SpawnPopupDialog makes without persistAcrossScenes, wherever it was moved since
-    private static readonly FieldInfo SpawnedField =
-        typeof(PopupDialog).GetField("instantiatedPopUps", BindingFlags.NonPublic | BindingFlags.Static);
+    private static readonly FieldInfo SpawnedField = typeof(PopupDialog).GetField(
+        "instantiatedPopUps",
+        BindingFlags.NonPublic | BindingFlags.Static
+    );
 
     private readonly EventHub hub;
 

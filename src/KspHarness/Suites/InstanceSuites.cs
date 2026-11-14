@@ -23,7 +23,8 @@ internal sealed class InstanceSuites
         var suite = (KspSuite)Activator.CreateInstance(type)!;
 
         // Tests take no parameters, so the name finds the method; a virtual one dispatches as it would on the original.
-        var method = type.GetMethod(test.Method.Name, BindingFlags.Instance | BindingFlags.Public, Type.EmptyTypes)
+        var method =
+            type.GetMethod(test.Method.Name, BindingFlags.Instance | BindingFlags.Public, Type.EmptyTypes)
             ?? throw new MissingMethodException(type.FullName, test.Method.Name);
         return (suite, method);
     }

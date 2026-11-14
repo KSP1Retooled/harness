@@ -83,7 +83,8 @@ public sealed class GameLog
         Func<GameEvent, bool> match,
         TimeSpan timeout,
         long? since = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         TaskCompletionSource<GameEvent> waiter;
         lock (gate)
@@ -117,10 +118,16 @@ public sealed class GameLog
         string pattern,
         TimeSpan timeout,
         long? since = null,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default
+    )
     {
         var regex = new Regex(pattern);
-        var found = await WaitForAsync(e => e is LogEvent log && regex.IsMatch(log.Message), timeout, since, cancellationToken);
+        var found = await WaitForAsync(
+            e => e is LogEvent log && regex.IsMatch(log.Message),
+            timeout,
+            since,
+            cancellationToken
+        );
         return (LogEvent)found;
     }
 

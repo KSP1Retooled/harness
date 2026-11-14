@@ -160,7 +160,9 @@ public static class SettingsFile
         for (int i = 0; i < lines.Count; i++)
         {
             string line = StripComment(lines[i]).Trim();
-            bool nodeHeader = line.Length > 0 && !line.Contains('=')
+            bool nodeHeader =
+                line.Length > 0
+                && !line.Contains('=')
                 && (line.Contains('{') || (i + 1 < lines.Count && StripComment(lines[i + 1]).Trim() == "{"));
             if (nodeHeader)
             {

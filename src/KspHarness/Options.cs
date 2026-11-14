@@ -115,4 +115,5 @@ public sealed record GameInfo(
     string Unity,
     string Scene,
     bool Loaded,
-    long LogCursor);
+    long LogCursor
+);

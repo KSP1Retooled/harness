@@ -130,8 +130,10 @@ public static class Ui
         if (!target.activeInHierarchy)
             throw new InvalidOperationException("Cannot click " + PathOf(target) + ": it is not active");
 
-        if (ExecuteEvents.GetEventHandler<IPointerClickHandler>(target) != null
-            || ExecuteEvents.GetEventHandler<IPointerDownHandler>(target) != null)
+        if (
+            ExecuteEvents.GetEventHandler<IPointerClickHandler>(target) != null
+            || ExecuteEvents.GetEventHandler<IPointerDownHandler>(target) != null
+        )
         {
             ClickUi(target);
         }
@@ -166,8 +168,11 @@ public static class Ui
         if (targets.Count > 1)
         {
             throw new InvalidOperationException(
-                "More than one clickable object shows the text '" + text + "': "
-                + string.Join(", ", targets.Select(PathOf)));
+                "More than one clickable object shows the text '"
+                    + text
+                    + "': "
+                    + string.Join(", ", targets.Select(PathOf))
+            );
         }
 
         return Click(clickable[0]);
@@ -180,15 +185,21 @@ public static class Ui
     public static string Describe()
     {
         var text = new StringBuilder();
-        IEnumerable<Canvas> canvases = Object.FindObjectsOfType<Canvas>()
+        IEnumerable<Canvas> canvases = Object
+            .FindObjectsOfType<Canvas>()
             .Where(canvas => canvas.isRootCanvas && canvas.isActiveAndEnabled)
             .OrderByDescending(canvas => canvas.sortingOrder)
             .ThenBy(canvas => PathOf(canvas.gameObject), StringComparer.Ordinal);
 
         foreach (Canvas canvas in canvases)
         {
-            text.Append("Canvas ").Append(PathOf(canvas.gameObject))
-                .Append(" (").Append(canvas.renderMode).Append(", order ").Append(canvas.sortingOrder).Append(")\n");
+            text.Append("Canvas ")
+                .Append(PathOf(canvas.gameObject))
+                .Append(" (")
+                .Append(canvas.renderMode)
+                .Append(", order ")
+                .Append(canvas.sortingOrder)
+                .Append(")\n");
             DescribeChildren(canvas.transform, 1, text);
         }
 
@@ -264,7 +275,8 @@ public static class Ui
             data.hovered.Add(t.gameObject);
         }
 
-        GameObject pressed = ExecuteEvents.ExecuteHierarchy(target, data, ExecuteEvents.pointerDownHandler)
+        GameObject pressed =
+            ExecuteEvents.ExecuteHierarchy(target, data, ExecuteEvents.pointerDownHandler)
             ?? ExecuteEvents.GetEventHandler<IPointerClickHandler>(target);
         data.pointerPress = pressed;
         data.rawPointerPress = target;
@@ -292,7 +304,8 @@ public static class Ui
         if (receiver == null)
         {
             throw new InvalidOperationException(
-                "Cannot click " + PathOf(target) + ": neither it nor a parent takes uGUI clicks or has a collider");
+                "Cannot click " + PathOf(target) + ": neither it nor a parent takes uGUI clicks or has a collider"
+            );
         }
 
         // A disabled collider is how KSP turns a 3D button off, as while the main menu shows a dialog
@@ -300,7 +313,9 @@ public static class Ui
             throw new InvalidOperationException("Cannot click " + PathOf(receiver) + ": its collider is disabled");
 
         // Unity sends these to the collider's object in this order for a press and release over it
-        foreach (string message in new[] { "OnMouseEnter", "OnMouseDown", "OnMouseUp", "OnMouseUpAsButton", "OnMouseExit" })
+        foreach (
+            string message in new[] { "OnMouseEnter", "OnMouseDown", "OnMouseUp", "OnMouseUpAsButton", "OnMouseExit" }
+        )
             receiver.SendMessage(message, SendMessageOptions.DontRequireReceiver);
     }
 
@@ -319,9 +334,10 @@ public static class Ui
             return new Vector2(Screen.width / 2f, Screen.height / 2f);
 
         Canvas canvas = target.GetComponentInParent<Canvas>();
-        Camera camera = canvas == null || canvas.rootCanvas.renderMode == RenderMode.ScreenSpaceOverlay
-            ? null
-            : canvas.rootCanvas.worldCamera;
+        Camera camera =
+            canvas == null || canvas.rootCanvas.renderMode == RenderMode.ScreenSpaceOverlay
+                ? null
+                : canvas.rootCanvas.worldCamera;
         return RectTransformUtility.WorldToScreenPoint(camera, rect.TransformPoint(rect.rect.center));
     }
 

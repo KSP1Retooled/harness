@@ -9,7 +9,13 @@ internal sealed record PreparedSnippet(SnippetSource Source, IReadOnlyList<objec
 /// <summary>Turns what a test passed to <c>Run</c> into a <see cref="SnippetSource"/>.</summary>
 internal static class SnippetBuilder
 {
-    public static PreparedSnippet FromString(string code, bool returnsValue, IReadOnlyList<string> usings, string? file, int line)
+    public static PreparedSnippet FromString(
+        string code,
+        bool returnsValue,
+        IReadOnlyList<string> usings,
+        string? file,
+        int line
+    )
     {
         var position = SourceLocator.LocateCode(file, line, code);
         var form = returnsValue ? SnippetForm.BodyWithReturn : SnippetForm.BodyWithoutReturn;
@@ -23,14 +29,16 @@ internal static class SnippetBuilder
         IReadOnlyList<string> usings,
         string? file,
         int line,
-        CSharpCompilation references)
+        CSharpCompilation references
+    )
     {
         if (string.IsNullOrWhiteSpace(text))
         {
             throw new SnippetCompileException(
                 "the lambda's source text is missing; call Run with a lambda written at the call",
                 file,
-                line);
+                line
+            );
         }
 
         var position = SourceLocator.Locate(file, line, text);
@@ -73,15 +81,17 @@ internal static class SnippetBuilder
         {
             throw new SnippetCompileException(
                 $"the lambda captures '{variable.Name}', a {type}, which can't be sent to the game. Capture numbers, "
-                + "strings, enums, vectors, arrays, tuples, GameTime or handles, and build other objects in the lambda.",
+                    + "strings, enums, vectors, arrays, tuples, GameTime or handles, and build other objects in the lambda.",
                 position.File,
-                position.Line);
+                position.Line
+            );
         }
 
         return GameTypeNames.FromDriverType(references, type)
             ?? throw new SnippetCompileException(
                 $"the lambda captures '{variable.Name}', a {type}, but the game has no such type",
                 position.File,
-                position.Line);
+                position.Line
+            );
     }
 }

@@ -22,7 +22,9 @@ public static class Database
     public static List<string> Query(string query)
     {
         TopLevelAdapter adapter = TopLevel();
-        return ConfigQuery.Parse(query).SelectNodes(adapter.Roots, adapter)
+        return ConfigQuery
+            .Parse(query)
+            .SelectNodes(adapter.Roots, adapter)
             .Select(node => ConfigWriter.WriteNode(ToCfgNode(node, adapter)))
             .ToList();
     }
@@ -66,8 +68,9 @@ public static class Database
     /// <summary><see cref="ConfigNodeAdapter"/>, plus the <c>name</c> value that loading took off top-level nodes.</summary>
     private sealed class TopLevelAdapter : INodeAdapter<ConfigNode>
     {
-        private readonly Dictionary<ConfigNode, string> missingNames =
-            new Dictionary<ConfigNode, string>(ReferenceComparer.Instance);
+        private readonly Dictionary<ConfigNode, string> missingNames = new Dictionary<ConfigNode, string>(
+            ReferenceComparer.Instance
+        );
 
         public TopLevelAdapter(IEnumerable<UrlDir.UrlConfig> configs)
         {
@@ -129,9 +132,7 @@ public sealed class ConfigNodeAdapter : INodeAdapter<ConfigNode>
 {
     public static readonly ConfigNodeAdapter Instance = new ConfigNodeAdapter();
 
-    private ConfigNodeAdapter()
-    {
-    }
+    private ConfigNodeAdapter() { }
 
     public string GetName(ConfigNode node) => node.name;
 

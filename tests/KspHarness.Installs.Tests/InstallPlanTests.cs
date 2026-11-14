@@ -9,7 +9,8 @@ public sealed class InstallPlanTests
 
     public sealed class Derived : InstallDefinition
     {
-        public override void Configure(InstallBuilder install) => install.Include<Base>().Ckan("KSPCommunityFixes", "1:1.41.1");
+        public override void Configure(InstallBuilder install) =>
+            install.Include<Base>().Ckan("KSPCommunityFixes", "1:1.41.1");
     }
 
     public sealed class TwoIncludes : InstallDefinition

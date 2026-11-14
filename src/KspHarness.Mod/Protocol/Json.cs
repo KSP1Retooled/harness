@@ -212,7 +212,10 @@ internal sealed class JsonReader
         }
 
         string number = text.Substring(start, position - start);
-        if (integral && long.TryParse(number, NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out long whole))
+        if (
+            integral
+            && long.TryParse(number, NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out long whole)
+        )
             return whole;
 
         if (double.TryParse(number, NumberStyles.Float, CultureInfo.InvariantCulture, out double real))

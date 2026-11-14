@@ -23,7 +23,8 @@ public sealed partial class StartingInstall
             ? retooled.Groups[1].Value.Trim()
             : null;
 
-        IsRetooled = System.IO.Directory.Exists(Path.Combine(layout.GameDataDir, "Retooled"))
+        IsRetooled =
+            System.IO.Directory.Exists(Path.Combine(layout.GameDataDir, "Retooled"))
             || File.Exists(Path.Combine(layout.ManagedDir, "KSP.Retooled.Modding.TextMeshPro.dll"));
 
         KspVersion = ReadReadmeVersion(Path.Combine(layout.Root, "readme.txt"));
@@ -99,7 +100,9 @@ public sealed partial class StartingInstall
         }
 
         // Folders a patch adds or removes at the top of GameData.
-        foreach (string dir in System.IO.Directory.EnumerateDirectories(Layout.GameDataDir).Order(StringComparer.Ordinal))
+        foreach (
+            string dir in System.IO.Directory.EnumerateDirectories(Layout.GameDataDir).Order(StringComparer.Ordinal)
+        )
         {
             text.Append("gamedata ").Append(Path.GetFileName(dir)).Append('\n');
         }
