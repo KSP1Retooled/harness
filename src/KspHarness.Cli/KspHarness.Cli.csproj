@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>KspHarness.Cli</RootNamespace>
+    <AssemblyName>ksph</AssemblyName>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>ksph</ToolCommandName>
+    <PackageId>KspHarness.Cli</PackageId>
+    <Description>Builds KSP instances, launches the game with the harness mod, and drives it from a console or MCP.</Description>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.2" />
+    <PackageReference Include="ModelContextProtocol" Version="2.4.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\KspHarness\KspHarness.csproj" />
+    <ProjectReference Include="..\KspHarness.Installs\KspHarness.Installs.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="KspHarness.Cli.Tests" />
+  </ItemGroup>
+
+  <!-- The driver mod only builds against a KSP install, and a tool without it fails at the first `ksph launch`. -->
+  <Target Name="RequireDriverModForPack" BeforeTargets="GenerateNuspec" Condition="'$(KspDir)' == ''">
+    <Error Text="pack with KSP_DIR set (a stock KSP 1.12.5 install) so that the driver mod ships inside the tool" />
+  </Target>
+
+</Project>
