@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  offline-tests:
+    name: Offline tests (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+
+      # The driver mod and the game tests compile against a KSP install, which hosted runners don't have, so these are
+      # the projects that build without one. Tests that need a real install skip themselves.
+      - name: Test
+        shell: bash
+        run: |
+          status=0
+          for project in KspHarness.ConfigNodes.Tests KspHarness.Installs.Tests KspHarness.Tests KspHarness.Cli.Tests; do
+            dotnet test "tests/$project" --logger "trx;LogFileName=$project.trx" --results-directory TestResults \
+              || status=1
+          done
+          exit $status
+
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: test-results-${{ matrix.os }}
+          path: TestResults
