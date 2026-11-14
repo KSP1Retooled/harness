@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <AssemblyName>KspHarness.Mod</AssemblyName>
+    <RootNamespace>KspHarness.Mod</RootNamespace>
+    <!-- Unity objects compare equal to null once destroyed, which nullable analysis cannot express -->
+    <Nullable>disable</Nullable>
+    <NoWarn>$(NoWarn);CS8632</NoWarn>
+    <!-- The game's base library lacks System.Net.Http, which the implicit usings for net472 import -->
+    <ImplicitUsings>disable</ImplicitUsings>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <DebugType>portable</DebugType>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+  </PropertyGroup>
+
+  <Target Name="CheckKspDir" BeforeTargets="ResolveAssemblyReferences">
+    <Error Condition="'$(KspDir)' == '' Or !Exists('$(KspManagedDir)/Assembly-CSharp.dll')"
+           Text="Set KspDir (or the KSP_DIR environment variable) to the root of a stock KSP 1.12.5 install." />
+  </Target>
+
+  <ItemGroup>
+    <Reference Include="$(KspManagedDir)/Assembly-CSharp.dll" Private="false" />
+    <Reference Include="$(KspManagedDir)/Assembly-CSharp-firstpass.dll" Private="false" />
+    <Reference Include="$(KspManagedDir)/UnityEngine.dll" Private="false" />
+    <Reference Include="$(KspManagedDir)/UnityEngine.*Module.dll" Private="false" />
+    <Reference Include="$(KspManagedDir)/UnityEngine.UI.dll" Private="false" />
+  </ItemGroup>
+
+  <!-- The mod queries config nodes itself (Database, wildcards), from the same sources the driver uses -->
+  <ItemGroup>
+    <Compile Include="..\KspHarness.ConfigNodes\**\*.cs"
+             Exclude="..\KspHarness.ConfigNodes\bin\**;..\KspHarness.ConfigNodes\obj\**"
+             Link="ConfigNodes\%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
+</Project>
