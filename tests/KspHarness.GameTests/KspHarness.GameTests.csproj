@@ -1,0 +1,52 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <RootNamespace>KspHarness.GameTests</RootNamespace>
+    <!-- Runs under `dotnet test` through VSTest, with no repository-wide global.json opting into the new platform. -->
+    <UseMicrosoftTestingPlatformRunner>false</UseMicrosoftTestingPlatformRunner>
+    <IsTestingPlatformApplication>false</IsTestingPlatformApplication>
+    <!-- The game's assemblies target .NET Framework; only their types matter here, never their code. -->
+    <NoWarn>$(NoWarn);MSB3277;CS1701;CS1702</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.4.0" />
+    <PackageReference Include="xunit.v3" Version="4.0.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="4.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\KspHarness\KspHarness.csproj" />
+    <ProjectReference Include="..\..\src\KspHarness.Installs\KspHarness.Installs.csproj" />
+  </ItemGroup>
+
+  <!--
+    Typed lambdas name game types, so the tests compile against a stock install's assemblies (never copied: the snippet
+    compiler recompiles each lambda against the instance's own assemblies). Without KSP_DIR there is no mod to deploy
+    either, so the project builds empty.
+  -->
+  <ItemGroup Condition="'$(KspDir)' != ''">
+    <Reference Include="$(KspManagedDir)/Assembly-CSharp.dll" Private="false" />
+    <Reference Include="$(KspManagedDir)/Assembly-CSharp-firstpass.dll" Private="false" />
+    <Reference Include="$(KspManagedDir)/UnityEngine.dll" Private="false" />
+    <Reference Include="$(KspManagedDir)/UnityEngine.CoreModule.dll" Private="false" />
+    <Reference Include="$(KspManagedDir)/UnityEngine.PhysicsModule.dll" Private="false" />
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>KspManagedDir</_Parameter1>
+      <_Parameter2>$(KspManagedDir)</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(KspDir)' == ''">
+    <Compile Remove="**\*.cs" />
+  </ItemGroup>
+
+</Project>
