@@ -1,0 +1,47 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>KspHarness</RootNamespace>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.9.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\KspHarness.ConfigNodes\KspHarness.ConfigNodes.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="KspHarness.Tests" />
+    <!-- ksph starts games that outlive it, with the same launch arguments and boot checks. -->
+    <InternalsVisibleTo Include="ksph" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\KspHarness.Installs\KspHarness.Installs.csproj" />
+  </ItemGroup>
+
+  <!--
+    The driver mod ships next to the library under mod/GameData/KspHarness, so that HarnessMod can deploy it into an
+    instance. As None items with CopyToOutputDirectory, the files also reach the output of every project that references
+    this one. The mod only builds when a KSP install is configured, because it references the game's assemblies.
+  -->
+  <PropertyGroup>
+    <HarnessModOutputDir>$(MSBuildThisFileDirectory)../KspHarness.Mod/bin/$(Configuration)/</HarnessModOutputDir>
+  </PropertyGroup>
+
+  <ItemGroup Condition="Exists('..\KspHarness.Mod\KspHarness.Mod.csproj') And '$(KspDir)' != ''">
+    <ProjectReference Include="..\KspHarness.Mod\KspHarness.Mod.csproj"
+                      ReferenceOutputAssembly="false"
+                      SkipGetTargetFrameworkProperties="true"
+                      GlobalPropertiesToRemove="TargetFramework" />
+    <None Include="$(HarnessModOutputDir)KspHarness.Mod.dll;$(HarnessModOutputDir)KspHarness.Mod.pdb"
+          Link="mod/GameData/KspHarness/Plugins/%(Filename)%(Extension)"
+          CopyToOutputDirectory="PreserveNewest"
+          Visible="false" />
+  </ItemGroup>
+
+</Project>
